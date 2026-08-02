@@ -108,15 +108,3 @@ Once the server starts, open the URL displayed in your terminal (typically **htt
 4. Make your changes in the `src/` directory.
 5. Test your changes in the browser.
 6. Build the project using `npm run build` before deployment.
-
----
-
-## Production Build
-
-To generate an optimized production build, run:
-
-```bash
-npm run build
-```
-
-The compiled files will be generated in the **`dist/`** folder and are ready to be deployed using any static hosting service such as GitHub Pages, Netlify, Vercel, or Firebase Hosting.
