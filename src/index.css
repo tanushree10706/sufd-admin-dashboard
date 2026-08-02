@@ -1,0 +1,177 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+@layer base {
+  :root {
+    --sidebar-width: 240px;
+    --panel-width: 400px;
+    --background: #051424;
+    --surface: #051424;
+    --surface-low: #0d1c2d;
+    --surface-container: #122131;
+    --surface-high: #1c2b3c;
+    --surface-highest: #273647;
+    --primary: #6bd8cb;
+    --secondary: #ffb3ad;
+    --tertiary: #ffb95f;
+    --error: #ffb4ab;
+    --outline: #879391;
+    --outline-variant: #3d4947;
+  }
+
+  body {
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #051424;
+    color: #d4e4fa;
+    overflow-x: hidden;
+  }
+
+  .font-mono {
+    font-family: 'IBM Plex Mono', monospace;
+  }
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #0d1c2d;
+}
+::-webkit-scrollbar-thumb {
+  background: #3d4947;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #6bd8cb;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #3d4947 #0d1c2d;
+}
+
+/* Animation utilities */
+@keyframes scan {
+  0%   { top: 0;    opacity: 0.8; }
+  50%  { opacity: 0.3; }
+  100% { top: 100%; opacity: 0.8; }
+}
+
+.scanline {
+  width: 100%;
+  height: 2px;
+  background: rgba(107, 216, 203, 0.15);
+  position: absolute;
+  left: 0;
+  animation: scan 6s linear infinite;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* SLA Breach Animations */
+@keyframes pulse-red-border {
+  0%, 100% { box-shadow: inset 3px 0 0 #ffb4ab; }
+  50%       { box-shadow: inset 3px 0 16px rgba(255, 180, 171, 0.4); }
+}
+
+.sla-red-pulse {
+  box-shadow: inset 3px 0 0 #ffb4ab;
+  background: linear-gradient(90deg, rgba(255, 180, 171, 0.10) 0%, transparent 120px);
+  animation: pulse-red-border 2s infinite ease-in-out;
+}
+
+.sla-amber {
+  box-shadow: inset 3px 0 0 #ffb95f;
+  background: linear-gradient(90deg, rgba(255, 185, 95, 0.08) 0%, transparent 120px);
+}
+
+/* Stat card ambient glow */
+.stat-card-glow {
+  box-shadow: inset 0 0 16px rgba(107, 216, 203, 0.05);
+}
+
+/* Leaflet container */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background-color: #010f1f !important;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* Dark CartoDB tile polish — keep the dark_all tile naturally dark */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #1c2b3c !important;
+  color: #d4e4fa !important;
+  border: 1px solid #3d4947 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.6) !important;
+}
+
+.leaflet-popup-content {
+  margin: 10px 14px !important;
+  min-width: 200px;
+}
+
+.leaflet-popup-close-button {
+  color: #bcc9c6 !important;
+  font-size: 18px !important;
+  top: 6px !important;
+  right: 8px !important;
+}
+
+.leaflet-control-zoom a {
+  background: #1c2b3c !important;
+  color: #6bd8cb !important;
+  border-color: #3d4947 !important;
+}
+.leaflet-control-zoom a:hover {
+  background: #273647 !important;
+}
+
+/* 24-column grid for analytics bar chart */
+.grid-cols-24 {
+  grid-template-columns: repeat(24, minmax(0, 1fr));
+}
+
+/* Subtle background grid overlay for command center feel */
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(107, 216, 203, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(107, 216, 203, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Transition for drawer panels */
+.drawer-enter {
+  transform: translateX(100%);
+  transition: transform 300ms ease-out;
+}
+.drawer-enter-active {
+  transform: translateX(0);
+}
+
+/* Glassmorphism card for overlays */
+.glass-card {
+  background: rgba(18, 33, 49, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(107, 216, 203, 0.15);
+}
+
+/* Priority badge pulse for critical */
+@keyframes badge-critical-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.7; }
+}
+.badge-critical-pulse {
+  animation: badge-critical-pulse 1.5s ease-in-out infinite;
+}
+
+/* Input focus ring in aegis teal */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 1px #6bd8cb;
+}
