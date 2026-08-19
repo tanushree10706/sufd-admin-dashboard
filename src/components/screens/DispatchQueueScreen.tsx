@@ -7,7 +7,7 @@ import {
   Filter,
   ArrowUpDown,
   Send,
-  Building2
+  TreePine
 } from 'lucide-react';
 
 export const DispatchQueueScreen: React.FC = () => {
@@ -128,9 +128,11 @@ export const DispatchQueueScreen: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 font-mono text-xs text-[#d4e4fa]">
-                      {inc.assignedDroneId || 'Vulcan-9 (Suggested)'}
+                      {inc.assignedDroneId || 'DRONE-GARUDA-01 (Suggested)'}
                     </td>
-                    <td className="px-6 py-4 text-xs text-[#bcc9c6]">Station Alpha (Downtown)</td>
+                    <td className="px-6 py-4 text-xs text-[#bcc9c6]">
+                      {stations.find((s) => s.id === inc.assignedStationId)?.name || 'Unassigned'}
+                    </td>
                     <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => assignNearestDrone(inc.id)}
@@ -157,7 +159,7 @@ export const DispatchQueueScreen: React.FC = () => {
         {/* Station Readiness Status */}
         <div className="bg-[#122131] border border-[#3d4947] rounded-xl p-5 space-y-4">
           <h3 className="text-base font-bold text-[#d4e4fa] flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-[#6bd8cb]" /> Station Unit Readiness
+            <TreePine className="w-4 h-4 text-[#6bd8cb]" /> Response Base Readiness
           </h3>
 
           <div className="space-y-4">
@@ -181,7 +183,7 @@ export const DispatchQueueScreen: React.FC = () => {
             onClick={() => setActiveScreen('stations')}
             className="w-full mt-4 py-2 border border-[#3d4947] text-xs font-bold text-[#bcc9c6] uppercase hover:bg-[#273647] rounded-lg transition-colors"
           >
-            Manage Station Fleets
+            Manage Response Bases
           </button>
         </div>
       </div>

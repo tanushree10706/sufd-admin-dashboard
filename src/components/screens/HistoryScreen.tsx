@@ -13,7 +13,7 @@ import {
 export const HistoryScreen: React.FC = () => {
   const { auditLogs, exportAuditLogsCSV } = useCommandCenter();
 
-  const [expandedRowId, setExpandedRowId] = useState<string | null>('aud-8829');
+  const [expandedRowId, setExpandedRowId] = useState<string | null>('aud-wf-001');
   const [filterStatus, setFilterStatus] = useState<'all' | 'resolved' | 'cancelled'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showPdfModal, setShowPdfModal] = useState<boolean>(false);
@@ -39,8 +39,8 @@ export const HistoryScreen: React.FC = () => {
       {/* Header Section */}
       <div className="flex flex-wrap justify-between items-end gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-[#d4e4fa] tracking-tight">Incident History & Audit Log</h2>
-          <p className="text-xs text-[#bcc9c6] mt-1">Compliance-grade audit log for all resolved and cancelled aerial response missions.</p>
+          <h2 className="text-2xl font-bold text-[#d4e4fa] tracking-tight">Incident History &amp; Audit Log</h2>
+          <p className="text-xs text-[#bcc9c6] mt-1">Compliance-grade audit log for all resolved and cancelled wildfire response missions.</p>
         </div>
 
         <div className="flex items-center space-x-3">
@@ -77,7 +77,7 @@ export const HistoryScreen: React.FC = () => {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Filter History by Incident ID (#SF-8829) or Address..."
+          placeholder="Filter History by Incident ID (INC-IND-) or Address..."
           className="w-96 bg-[#0d1c2d] border border-[#3d4947] rounded-lg px-4 py-2 text-xs text-[#d4e4fa] focus:border-[#6bd8cb]"
         />
 
@@ -92,7 +92,7 @@ export const HistoryScreen: React.FC = () => {
           <thead className="bg-[#122131] text-[#bcc9c6] border-b border-[#3d4947] text-[11px] font-bold uppercase">
             <tr>
               <th className="px-6 py-4">Incident ID</th>
-              <th className="px-6 py-4">Date & Time</th>
+              <th className="px-6 py-4">Date &amp; Time</th>
               <th className="px-6 py-4">Address</th>
               <th className="px-6 py-4">Status</th>
               <th className="px-6 py-4">Assigned Unit</th>
@@ -161,7 +161,7 @@ export const HistoryScreen: React.FC = () => {
                           <div className="col-span-4 space-y-3">
                             <h4 className="text-xs font-bold uppercase text-[#bcc9c6]">Post-Mission Operator Notes</h4>
                             <p className="text-xs italic text-[#d4e4fa] bg-[#122131] p-3 border border-[#3d4947] rounded-lg">
-                              "{log.postMissionNote || 'Mission concluded cleanly under standard SOP parameters.'}"
+                              &quot;{log.postMissionNote || 'Mission concluded cleanly under standard SOP parameters.'}&quot;
                             </p>
                             <p className="text-[10px] text-[#bcc9c6]">Authorized Operator: <span className="text-[#6bd8cb] font-bold">{log.operatorId}</span></p>
                           </div>
@@ -199,11 +199,11 @@ export const HistoryScreen: React.FC = () => {
             </div>
 
             <div className="space-y-3 text-xs text-[#d4e4fa] font-mono">
-              <p>SUFD COMMAND CENTER REPORT — #SF-8829-X</p>
-              <p>DISPATCH TIMESTAMP: 2026-08-02 14:22:10 UTC</p>
-              <p>RESPONSE UNITS: Drone DR-402, Station Alpha</p>
-              <p>FINAL OUTCOME: THREAT CONTAINED & RESOLVED</p>
-              <p>AUDIT VERIFICATION: 100% ISO-9001 COMPLIANT</p>
+              <p>ARANYAK INCIDENT COMPLIANCE REPORT — INC-IND-999-X</p>
+              <p>DISPATCH TIMESTAMP: 2026-08-15 11:34:10 UTC</p>
+              <p>RESPONSE UNITS: DRONE-GARUDA-01, Gir Command Station</p>
+              <p>FINAL OUTCOME: WILDFIRE CONTAINED &amp; RESOLVED</p>
+              <p>AUDIT VERIFICATION: 100% ARANYAK COMPLIANCE VERIFIED</p>
             </div>
 
             <div className="flex space-x-3 pt-4 border-t border-[#3d4947]">

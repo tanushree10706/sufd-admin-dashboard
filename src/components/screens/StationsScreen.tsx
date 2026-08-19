@@ -1,183 +1,137 @@
 import React from 'react';
 import { useCommandCenter } from '../../context/CommandCenterContext';
 import { MapComponent } from '../MapComponent';
-import {
-  Building2,
-  Plane,
-  Users,
-  Clock,
-  Activity,
-  ChevronRight
-} from 'lucide-react';
+import { TreePine, Plane, Users, Clock, Activity, ChevronRight } from 'lucide-react';
 
 export const StationsScreen: React.FC = () => {
-  const { stations, drones, responders, setActiveScreen } = useCommandCenter();
+  const { stations, incidents, setActiveScreen } = useCommandCenter();
+
+  const totalBases = stations.length;
+  const totalDronesDocked = stations.reduce((acc, st) => acc + st.dockedDrones, 0);
+  const totalPersonnel = stations.reduce((acc, st) => acc + st.totalResponders, 0);
 
   return (
     <div className="space-y-6 pb-12">
       {/* Header */}
-      <div className="flex flex-wrap justify-between items-end gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-[#d4e4fa] flex items-center gap-2">
-            <Building2 className="w-6 h-6 text-[#6bd8cb]" />
-            Fire Stations Control Panel
-          </h2>
-          <p className="text-xs text-[#bcc9c6] mt-1">
-            Live operational overview of all active district fire stations, drone bays, and personnel deployment.
-          </p>
-        </div>
-        <button
-          onClick={() => setActiveScreen('personnel')}
-          className="px-4 py-2 bg-[#0d1c2d] border border-[#3d4947] text-xs font-bold text-[#d4e4fa] rounded-lg hover:bg-[#273647] flex items-center gap-1"
-        >
-          <Users className="w-4 h-4" />
-          Manage All Personnel
-        </button>
-      </div>
-
-      {/* Station Cards Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {stations.map((station) => {
-          const stationDrones = drones.filter((d) => d.stationId === station.id);
-          const activeDrones = stationDrones.filter((d) => d.status === 'en_route' || d.status === 'on_site');
-          const stationResponders = responders.filter((r) => r.stationId === station.id);
-          const availableResponders = stationResponders.filter((r) => r.status === 'available');
-          const utilizationColor =
-            station.utilizationPercent > 85
-              ? 'text-[#ffb4ab]'
-              : station.utilizationPercent > 60
-              ? 'text-[#ffb95f]'
-              : 'text-[#6bd8cb]';
-
-          return (
-            <div
-              key={station.id}
-              className="bg-[#122131] border border-[#3d4947] hover:border-[#6bd8cb]/50 rounded-xl overflow-hidden transition-colors group"
-            >
-              {/* Station Header */}
-              <div className="bg-[#1c2b3c] px-6 py-4 border-b border-[#3d4947] flex justify-between items-center">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-[#29a195]/20 border border-[#6bd8cb]/40 rounded-xl flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-[#6bd8cb]" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-[#d4e4fa]">{station.name}</h3>
-                    <p className="text-[10px] text-[#bcc9c6]">{station.address}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setActiveScreen('drones')}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-[#6bd8cb] flex items-center gap-1"
-                >
-                  Manage <ChevronRight className="w-3 h-3" />
-                </button>
-              </div>
-
-              {/* Station Metrics Grid */}
-              <div className="p-6 grid grid-cols-2 gap-6">
-                {/* Left Column */}
-                <div className="space-y-4">
-                  {/* Drone Bay Status */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[11px] font-bold text-[#bcc9c6] uppercase tracking-wider flex items-center gap-1.5">
-                        <Plane className="w-3.5 h-3.5 text-[#6bd8cb]" /> Drone Dock
-                      </span>
-                      <span className="font-mono text-xs font-bold text-[#6bd8cb]">
-                        {station.dockedDrones}/{station.totalDrones} Docked
-                      </span>
-                    </div>
-                    <div className="w-full bg-[#0d1c2d] h-2.5 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-[#6bd8cb] rounded-full transition-all"
-                        style={{ width: `${(station.dockedDrones / station.totalDrones) * 100}%` }}
-                      />
-                    </div>
-                    <p className="text-[10px] text-[#bcc9c6]">
-                      {activeDrones.length} unit{activeDrones.length !== 1 ? 's' : ''} currently deployed
-                    </p>
-                  </div>
-
-                  {/* Responder Load */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[11px] font-bold text-[#bcc9c6] uppercase tracking-wider flex items-center gap-1.5">
-                        <Users className="w-3.5 h-3.5 text-[#6bd8cb]" /> Personnel
-                      </span>
-                      <span className="font-mono text-xs font-bold text-[#d4e4fa]">
-                        {availableResponders.length}/{station.totalResponders} Available
-                      </span>
-                    </div>
-                    <div className="w-full bg-[#0d1c2d] h-2.5 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-[#ffb95f] rounded-full transition-all"
-                        style={{ width: `${(availableResponders.length / Math.max(station.totalResponders, 1)) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Column */}
-                <div className="space-y-4">
-                  {/* Avg Response Time */}
-                  <div className="bg-[#0d1c2d] p-3 border border-[#3d4947] rounded-lg">
-                    <p className="text-[10px] font-bold text-[#bcc9c6] uppercase mb-1 flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" /> Avg Response
-                    </p>
-                    <p className="text-xl font-mono font-bold text-[#d4e4fa]">
-                      {Math.floor(station.avgResponseTimeSec / 60)}m {(station.avgResponseTimeSec % 60).toString().padStart(2, '0')}s
-                    </p>
-                  </div>
-
-                  {/* Utilization */}
-                  <div className="bg-[#0d1c2d] p-3 border border-[#3d4947] rounded-lg">
-                    <p className="text-[10px] font-bold text-[#bcc9c6] uppercase mb-1 flex items-center gap-1">
-                      <Activity className="w-3.5 h-3.5" /> Utilization
-                    </p>
-                    <p className={`text-xl font-mono font-bold ${utilizationColor}`}>
-                      {station.utilizationPercent}%
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Drone Icons Row */}
-              <div className="px-6 pb-5 flex flex-wrap gap-2">
-                {stationDrones.map((d) => (
-                  <div
-                    key={d.id}
-                    className={`flex items-center space-x-1.5 px-2 py-1 rounded border text-[10px] font-mono font-bold ${
-                      d.status === 'idle'
-                        ? 'bg-[#29a195]/10 border-[#6bd8cb]/30 text-[#6bd8cb]'
-                        : d.status === 'charging'
-                        ? 'bg-[#273647] border-[#3d4947] text-[#bcc9c6]'
-                        : d.status === 'maintenance'
-                        ? 'bg-[#93000a]/20 border-[#ffb4ab]/30 text-[#ffb4ab]'
-                        : 'bg-[#ca8100]/20 border-[#ffb95f]/30 text-[#ffb95f]'
-                    }`}
-                  >
-                    <Plane className="w-3 h-3" />
-                    <span>{d.id}</span>
-                    <span className="opacity-60">({d.batteryPercent}%)</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Coverage Map */}
-      <div className="bg-[#122131] border border-[#3d4947] rounded-xl overflow-hidden">
-        <div className="px-6 py-3 bg-[#1c2b3c] border-b border-[#3d4947] flex justify-between items-center">
-          <h3 className="text-base font-bold text-[#d4e4fa]">📍 District Coverage & Station Map</h3>
-          <div className="flex items-center space-x-4 text-xs font-mono text-[#bcc9c6]">
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#273647] border border-[#6bd8cb]" /> Station</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-[#6bd8cb]/20 border border-[#6bd8cb]" /> Coverage Radius</span>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center space-x-3">
+          <div className="p-3 bg-[#122131] border border-[#3d4947] rounded-xl">
+            <TreePine className="w-6 h-6 text-[#6bd8cb]" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-[#d4e4fa]">Response Bases & Fire Camps</h2>
+            <p className="text-xs text-[#bcc9c6]">Operational wildland firefighting bases, drone staging areas, and field crew camps.</p>
           </div>
         </div>
-        <div className="h-80">
-          <MapComponent height="100%" />
+        
+        <div className="flex gap-4">
+          <div className="bg-[#122131] border border-[#3d4947] px-4 py-2 rounded-lg text-center">
+            <p className="text-[10px] font-bold text-[#bcc9c6] uppercase">Total Bases</p>
+            <p className="text-lg font-mono font-bold text-[#d4e4fa]">{totalBases}</p>
+          </div>
+          <div className="bg-[#122131] border border-[#3d4947] px-4 py-2 rounded-lg text-center">
+            <p className="text-[10px] font-bold text-[#bcc9c6] uppercase">Drones Docked</p>
+            <p className="text-lg font-mono font-bold text-[#6bd8cb]">{totalDronesDocked}</p>
+          </div>
+          <div className="bg-[#122131] border border-[#3d4947] px-4 py-2 rounded-lg text-center">
+            <p className="text-[10px] font-bold text-[#bcc9c6] uppercase">Total Personnel</p>
+            <p className="text-lg font-mono font-bold text-[#d4e4fa]">{totalPersonnel}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-12 gap-6">
+        {/* Left: Station cards grid */}
+        <div className="col-span-12 lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+          {stations.map(st => {
+            const utilizationColor = st.utilizationPercent > 85 ? 'bg-[#93000a]' : st.utilizationPercent > 60 ? 'bg-[#ca8100]' : 'bg-[#6bd8cb]';
+            const avgMins = Math.floor(st.avgResponseTimeSec / 60);
+            const avgSecs = st.avgResponseTimeSec % 60;
+
+            return (
+              <div key={st.id} className="bg-[#122131] border border-[#3d4947] rounded-xl p-5 flex flex-col">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center space-x-2">
+                    <TreePine className="w-5 h-5 text-[#6bd8cb]" />
+                    <h3 className="font-bold text-[#d4e4fa] text-sm">{st.name}</h3>
+                  </div>
+                  <span className="text-[10px] font-mono text-[#bcc9c6]">{st.id}</span>
+                </div>
+                <p className="text-xs text-[#bcc9c6] mb-4">{st.address}</p>
+
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="bg-[#0d1c2d] p-2 rounded border border-[#3d4947]/50">
+                    <p className="text-[10px] text-[#bcc9c6] uppercase flex items-center gap-1 mb-1"><Plane className="w-3 h-3" /> Drones Docked</p>
+                    <p className="text-sm font-mono font-bold text-[#d4e4fa]">{st.dockedDrones}/{st.totalDrones}</p>
+                    <div className="w-full bg-[#1c2b3c] h-1.5 mt-1 rounded-full overflow-hidden">
+                      <div className="h-full bg-[#6bd8cb]" style={{ width: `${(st.dockedDrones / st.totalDrones) * 100}%` }} />
+                    </div>
+                  </div>
+                  <div className="bg-[#0d1c2d] p-2 rounded border border-[#3d4947]/50">
+                    <p className="text-[10px] text-[#bcc9c6] uppercase flex items-center gap-1 mb-1"><Users className="w-3 h-3" /> Available Crew</p>
+                    <p className="text-sm font-mono font-bold text-[#d4e4fa]">{st.availableResponders}/{st.totalResponders}</p>
+                    <div className="w-full bg-[#1c2b3c] h-1.5 mt-1 rounded-full overflow-hidden">
+                      <div className="h-full bg-[#d4e4fa]" style={{ width: `${(st.availableResponders / st.totalResponders) * 100}%` }} />
+                    </div>
+                  </div>
+                  <div className="bg-[#0d1c2d] p-2 rounded border border-[#3d4947]/50">
+                    <p className="text-[10px] text-[#bcc9c6] uppercase flex items-center gap-1 mb-1"><Clock className="w-3 h-3" /> Avg Response</p>
+                    <p className="text-sm font-mono font-bold text-[#ffb95f]">{avgMins}m {avgSecs}s</p>
+                  </div>
+                  <div className="bg-[#0d1c2d] p-2 rounded border border-[#3d4947]/50">
+                    <p className="text-[10px] text-[#bcc9c6] uppercase flex items-center gap-1 mb-1"><Activity className="w-3 h-3" /> Utilization</p>
+                    <p className="text-sm font-mono font-bold text-[#d4e4fa]">{st.utilizationPercent}%</p>
+                    <div className="w-full bg-[#1c2b3c] h-1.5 mt-1 rounded-full overflow-hidden">
+                      <div className={`h-full ${utilizationColor}`} style={{ width: `${st.utilizationPercent}%` }} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-auto pt-4 border-t border-[#3d4947]/50">
+                  <button 
+                    onClick={() => setActiveScreen('dispatch')}
+                    className="w-full py-1.5 border border-[#3d4947] hover:bg-[#1c2b3c] transition-colors rounded text-xs font-bold text-[#d4e4fa] flex items-center justify-center gap-1"
+                  >
+                    View Incidents <ChevronRight className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Right: Map and Incidents */}
+        <div className="col-span-12 lg:col-span-4 space-y-4">
+          <div className="bg-[#122131] border border-[#3d4947] rounded-xl h-64 overflow-hidden relative">
+            <MapComponent height="100%" showDrones={false} />
+          </div>
+          
+          <div className="bg-[#122131] border border-[#3d4947] rounded-xl p-4">
+            <h3 className="font-bold text-sm text-[#d4e4fa] mb-3">Active Incidents by Base</h3>
+            <div className="space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
+              {stations.map(st => {
+                const baseIncidents = incidents.filter(i => i.assignedStationId === st.id && i.status !== 'resolved' && i.status !== 'cancelled');
+                
+                return (
+                  <div key={st.id} className="border-b border-[#3d4947]/50 pb-2 last:border-0 last:pb-0">
+                    <p className="text-xs font-bold text-[#bcc9c6] mb-1">{st.name}</p>
+                    {baseIncidents.length === 0 ? (
+                      <p className="text-[10px] text-[#bcc9c6]/50 italic">No active incidents</p>
+                    ) : (
+                      <div className="space-y-1">
+                        {baseIncidents.map(inc => (
+                          <div key={inc.id} className="flex justify-between items-center bg-[#0d1c2d] px-2 py-1 rounded">
+                            <span className="text-[10px] font-mono text-[#6bd8cb] cursor-pointer hover:underline" onClick={() => setActiveScreen('incident_detail')}>{inc.id}</span>
+                            <span className={`text-[9px] px-1 py-0.5 rounded font-bold uppercase ${inc.priority === 'critical' ? 'bg-[#93000a] text-[#ffb4ab]' : 'bg-[#ca8100] text-[#ffb95f]'}`}>{inc.priority}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -1,174 +1,231 @@
 import React from 'react';
 import { useCommandCenter } from '../../context/CommandCenterContext';
-import {
-  TrendingDown,
-  TrendingUp,
-  CheckCircle2,
-  AlertTriangle,
-  Heart,
-  Calendar,
-  Download,
-  Activity
-} from 'lucide-react';
+import { BarChart3, Flame, Activity, Clock, Plane, AlertTriangle, Shield } from 'lucide-react';
 
 export const AnalyticsScreen: React.FC = () => {
-  const { exportAuditLogsCSV } = useCommandCenter();
+  const { incidents, drones, stations, forestZones, auditLogs } = useCommandCenter();
+
+  const activeIncidents = incidents.filter(i => i.status !== 'resolved' && i.status !== 'cancelled');
+  const criticalCount = activeIncidents.filter(i => i.priority === 'critical').length;
+  const activeDrones = drones.filter(d => d.status === 'en_route' || d.status === 'on_site').length;
+  
+  const incidentsWithContainment = activeIncidents.filter(i => i.containmentPercent !== undefined);
+  const avgContainment = incidentsWithContainment.length > 0 
+    ? incidentsWithContainment.reduce((acc, i) => acc + (i.containmentPercent || 0), 0) / incidentsWithContainment.length 
+    : 0;
+    
+  const avgResponseTimeSec = stations.length > 0 
+    ? stations.reduce((acc, s) => acc + s.avgResponseTimeSec, 0) / stations.length 
+    : 0;
+  
+  const dueZones = forestZones.filter(z => z.surveillanceStatus !== 'up_to_date').length;
+
+  const resolvedCount = auditLogs.filter(a => a.finalStatus === 'resolved').length;
+  const onSiteCount = activeIncidents.filter(i => i.status === 'on_site').length;
+  const enRouteCount = activeIncidents.filter(i => i.status === 'en_route').length;
+  const alertCount = activeIncidents.length - onSiteCount - enRouteCount;
+
+  const forestCount = activeIncidents.filter(i => i.terrainType === 'forest').length;
+  const shrublandCount = activeIncidents.filter(i => i.terrainType === 'shrubland').length;
+  const grasslandCount = activeIncidents.filter(i => i.terrainType === 'grassland').length;
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Header */}
-      <div className="flex flex-wrap justify-between items-end gap-4">
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-[#d4e4fa]">Analytics & Fleet Performance</h2>
-          <p className="text-xs text-[#bcc9c6] mt-1">Aggregate response metrics and operational efficiency for the current period.</p>
+          <h2 className="text-xl font-bold text-[#d4e4fa] flex items-center gap-2">
+            <BarChart3 className="w-6 h-6 text-[#6bd8cb]" /> Analytics & Wildfire Intelligence
+          </h2>
+          <p className="text-xs text-[#bcc9c6] mt-1">Operational performance metrics for the current reporting period.</p>
         </div>
-
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center bg-[#122131] border border-[#3d4947] rounded-lg px-3 py-1.5 text-xs text-[#d4e4fa] font-medium">
-            <Calendar className="w-4 h-4 text-[#6bd8cb] mr-2" />
-            <span>Oct 01 - Oct 31, 2026</span>
-          </div>
-
-          <button
-            onClick={exportAuditLogsCSV}
-            className="flex items-center space-x-1.5 px-4 py-2 bg-[#6bd8cb] text-[#003732] font-bold text-xs rounded-lg hover:brightness-110 shadow-md"
-          >
-            <Download className="w-4 h-4" />
-            <span>EXPORT SUMMARY REPORT</span>
-          </button>
+        <div className="bg-[#122131] border border-[#3d4947] px-4 py-2 rounded-lg">
+          <span className="text-[10px] font-bold text-[#bcc9c6] uppercase">Period</span>
+          <p className="text-sm font-mono font-bold text-[#d4e4fa]">August 2026</p>
         </div>
       </div>
 
-      {/* Bento Grid */}
+      {/* KPI STAT CARDS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-[#122131] border border-[#3d4947] rounded-xl p-5 flex items-center gap-4">
+          <div className="p-3 bg-[#0d1c2d] rounded-lg border border-[#3d4947]">
+            <Flame className="w-6 h-6 text-[#ffb4ab]" />
+          </div>
+          <div>
+            <p className="text-[10px] text-[#bcc9c6] uppercase font-bold">Active Wildfires</p>
+            <p className="text-2xl font-mono font-bold text-[#d4e4fa]">{activeIncidents.length}</p>
+          </div>
+        </div>
+        <div className="bg-[#122131] border border-[#3d4947] rounded-xl p-5 flex items-center gap-4">
+          <div className="p-3 bg-[#0d1c2d] rounded-lg border border-[#3d4947]">
+            <Plane className="w-6 h-6 text-[#6bd8cb]" />
+          </div>
+          <div>
+            <p className="text-[10px] text-[#bcc9c6] uppercase font-bold">Drones Deployed</p>
+            <p className="text-2xl font-mono font-bold text-[#d4e4fa]">{activeDrones}/{drones.length}</p>
+          </div>
+        </div>
+        <div className="bg-[#122131] border border-[#3d4947] rounded-xl p-5 flex items-center gap-4">
+          <div className="p-3 bg-[#0d1c2d] rounded-lg border border-[#3d4947]">
+            <Shield className="w-6 h-6 text-[#6bd8cb]" />
+          </div>
+          <div>
+            <p className="text-[10px] text-[#bcc9c6] uppercase font-bold">Avg Containment</p>
+            <p className="text-2xl font-mono font-bold text-[#d4e4fa]">{avgContainment.toFixed(1)}%</p>
+          </div>
+        </div>
+        <div className="bg-[#122131] border border-[#3d4947] rounded-xl p-5 flex items-center gap-4">
+          <div className="p-3 bg-[#0d1c2d] rounded-lg border border-[#3d4947]">
+            <Clock className="w-6 h-6 text-[#ffb95f]" />
+          </div>
+          <div>
+            <p className="text-[10px] text-[#bcc9c6] uppercase font-bold">Avg Response Time</p>
+            <p className="text-2xl font-mono font-bold text-[#d4e4fa]">{Math.floor(avgResponseTimeSec/60)}m {Math.floor(avgResponseTimeSec%60)}s</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-[#122131] border border-[#3d4947] rounded-xl p-5 flex items-center gap-4">
+          <div className="p-3 bg-[#93000a]/20 rounded-lg border border-[#ffb4ab]/30">
+            <AlertTriangle className="w-6 h-6 text-[#ffb4ab]" />
+          </div>
+          <div>
+            <p className="text-[10px] text-[#bcc9c6] uppercase font-bold">High/Critical Incidents</p>
+            <p className="text-2xl font-mono font-bold text-[#ffb4ab]">{criticalCount + activeIncidents.filter(i=>i.priority==='high').length}</p>
+          </div>
+        </div>
+        <div className="bg-[#122131] border border-[#3d4947] rounded-xl p-5 flex items-center gap-4">
+          <div className={`p-3 rounded-lg border ${dueZones > 0 ? 'bg-[#ca8100]/20 border-[#ca8100]/30' : 'bg-[#29a195]/20 border-[#6bd8cb]/30'}`}>
+            <Activity className={`w-6 h-6 ${dueZones > 0 ? 'text-[#ffb95f]' : 'text-[#6bd8cb]'}`} />
+          </div>
+          <div>
+            <p className="text-[10px] text-[#bcc9c6] uppercase font-bold">Surveillance Due</p>
+            <p className={`text-2xl font-mono font-bold ${dueZones > 0 ? 'text-[#ffb95f]' : 'text-[#6bd8cb]'}`}>{dueZones} zones</p>
+          </div>
+        </div>
+      </div>
+
+      {/* CHARTS */}
       <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 sm:col-span-6 lg:col-span-3 bg-[#122131] border border-[#3d4947] p-5 rounded-xl flex flex-col justify-between">
-          <div className="flex justify-between items-start">
-            <span className="text-[11px] font-bold uppercase text-[#bcc9c6] tracking-wider">Avg Response Time</span>
-            <Activity className="w-5 h-5 text-[#6bd8cb]" />
-          </div>
-          <div className="mt-4">
-            <div className="text-3xl font-mono text-[#6bd8cb] font-bold">04:12</div>
-            <div className="flex items-center text-xs text-[#6bd8cb] mt-1 font-medium">
-              <TrendingDown className="w-3.5 h-3.5 mr-1" />
-              <span>-12s improvement from last month</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-span-12 sm:col-span-6 lg:col-span-3 bg-[#122131] border border-[#3d4947] p-5 rounded-xl flex flex-col justify-between">
-          <div className="flex justify-between items-start">
-            <span className="text-[11px] font-bold uppercase text-[#bcc9c6] tracking-wider">Resolution Rate</span>
-            <CheckCircle2 className="w-5 h-5 text-[#ffb3ad]" />
-          </div>
-          <div className="mt-4">
-            <div className="text-3xl font-mono text-[#d4e4fa] font-bold">98.4%</div>
-            <div className="flex items-center text-xs text-[#ffb3ad] mt-1 font-medium">
-              <TrendingUp className="w-3.5 h-3.5 mr-1" />
-              <span>+0.2% improvement</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-span-12 sm:col-span-6 lg:col-span-3 bg-[#122131] border border-[#3d4947] p-5 rounded-xl flex flex-col justify-between">
-          <div className="flex justify-between items-start">
-            <span className="text-[11px] font-bold uppercase text-[#bcc9c6] tracking-wider">Total Incidents</span>
-            <AlertTriangle className="w-5 h-5 text-[#ffb95f]" />
-          </div>
-          <div className="mt-4">
-            <div className="text-3xl font-mono text-[#d4e4fa] font-bold">1,842</div>
-            <div className="text-xs text-[#bcc9c6] mt-1">Stabilized against forecast</div>
-          </div>
-        </div>
-
-        <div className="col-span-12 sm:col-span-6 lg:col-span-3 bg-[#122131] border border-[#3d4947] p-5 rounded-xl flex flex-col justify-between">
-          <div className="flex justify-between items-start">
-            <span className="text-[11px] font-bold uppercase text-[#bcc9c6] tracking-wider">Fleet Health</span>
-            <Heart className="w-5 h-5 text-[#6bd8cb]" />
-          </div>
-          <div className="mt-4">
-            <div className="text-3xl font-mono text-[#d4e4fa] font-bold">92%</div>
-            <div className="text-xs text-[#bcc9c6] mt-1">4 drones requiring maintenance</div>
-          </div>
-        </div>
-
-        <div className="col-span-12 lg:col-span-8 bg-[#122131] border border-[#3d4947] p-6 rounded-xl space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-sm font-bold text-[#d4e4fa]">Response Time Trend & Operational Capacity</h3>
-            <div className="flex items-center space-x-4 text-xs font-mono">
-              <span className="flex items-center gap-1.5 text-[#6bd8cb]"><span className="w-2.5 h-2.5 rounded-full bg-[#6bd8cb]" /> Response Time</span>
-              <span className="flex items-center gap-1.5 text-[#bcc9c6]"><span className="w-2.5 h-2.5 rounded-full bg-[#3d4947]" /> Fleet Capacity</span>
-            </div>
-          </div>
-
-          <div className="h-64 relative w-full flex items-end">
-            <svg className="w-full h-full" viewBox="0 0 800 200" preserveAspectRatio="none">
+        {/* Line Chart */}
+        <div className="col-span-12 lg:col-span-7 bg-[#122131] border border-[#3d4947] rounded-xl p-6">
+          <h3 className="font-bold text-sm text-[#d4e4fa] mb-6">Daily Average Response Time (Minutes)</h3>
+          <div className="h-48 w-full">
+            <svg viewBox="0 0 700 200" className="w-full h-full overflow-visible">
               <defs>
-                <linearGradient id="chartGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#6bd8cb" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#6bd8cb" stopOpacity="0.0" />
+                <linearGradient id="lineFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#6bd8cb" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#6bd8cb" stopOpacity="0" />
                 </linearGradient>
               </defs>
+              {/* Grid Lines */}
+              {[0, 50, 100, 150].map(y => (
+                <line key={y} x1="40" y1={y} x2="700" y2={y} stroke="#3d4947" strokeDasharray="4 4" />
+              ))}
+              {/* Y Axis labels */}
+              {['10', '7.5', '5', '2.5'].map((lbl, i) => (
+                <text key={i} x="30" y={i * 50 + 4} fill="#bcc9c6" fontSize="10" textAnchor="end" className="font-mono">{lbl}</text>
+              ))}
+              
+              {/* Path and Fill */}
+              {/* Data: [8.2, 6.4, 9.1, 7.8, 5.5, 6.8, 7.2] */}
+              {/* Max value ~10 -> 0y, 0 value -> 200y */}
+              <path d="M40 36 L150 72 L260 18 L370 44 L480 90 L590 64 L700 56 L700 200 L40 200 Z" fill="url(#lineFill)" />
+              <path d="M40 36 L150 72 L260 18 L370 44 L480 90 L590 64 L700 56" fill="none" stroke="#6bd8cb" strokeWidth="3" />
+              
+              {/* Data points */}
+              {[
+                {x: 40, y: 36}, {x: 150, y: 72}, {x: 260, y: 18}, {x: 370, y: 44}, 
+                {x: 480, y: 90}, {x: 590, y: 64}, {x: 700, y: 56}
+              ].map((pt, i) => (
+                <circle key={i} cx={pt.x} cy={pt.y} r="5" fill="#122131" stroke="#6bd8cb" strokeWidth="2" />
+              ))}
 
-              <line x1="0" y1="50" x2="800" y2="50" stroke="#3d4947" strokeDasharray="4" />
-              <line x1="0" y1="100" x2="800" y2="100" stroke="#3d4947" strokeDasharray="4" />
-              <line x1="0" y1="150" x2="800" y2="150" stroke="#3d4947" strokeDasharray="4" />
-
-              <path d="M0,150 Q100,140 200,160 T400,100 T600,120 T800,80 L800,200 L0,200 Z" fill="url(#chartGrad)" />
-              <path d="M0,150 Q100,140 200,160 T400,100 T600,120 T800,80" fill="none" stroke="#6bd8cb" strokeWidth="3" />
+              {/* X Axis labels */}
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => (
+                <text key={i} x={40 + i * 110} y="220" fill="#bcc9c6" fontSize="10" textAnchor="middle" className="uppercase font-bold">{day}</text>
+              ))}
             </svg>
-          </div>
-
-          <div className="flex justify-between text-xs font-mono text-[#bcc9c6]">
-            <span>OCT 01</span><span>OCT 07</span><span>OCT 14</span><span>OCT 21</span><span>OCT 28</span><span>OCT 31</span>
           </div>
         </div>
 
-        <div className="col-span-12 lg:col-span-4 bg-[#122131] border border-[#3d4947] p-6 rounded-xl flex flex-col justify-between">
-          <h3 className="text-sm font-bold text-[#d4e4fa]">Incident Resolution Ratio</h3>
-
-          <div className="flex flex-col items-center justify-center py-6">
-            <div className="w-44 h-44 rounded-full border-[16px] border-[#273647] relative flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full border-[16px] border-[#6bd8cb] border-b-transparent border-l-transparent rotate-45" />
+        {/* Donut Chart */}
+        <div className="col-span-12 lg:col-span-5 bg-[#122131] border border-[#3d4947] rounded-xl p-6 flex flex-col items-center">
+          <h3 className="font-bold text-sm text-[#d4e4fa] mb-6 w-full text-left">Incident Breakdown by Status</h3>
+          
+          <div className="relative w-48 h-48 mb-6">
+            <div 
+              className="w-full h-full rounded-full"
+              style={{
+                background: `conic-gradient(
+                  #ffb4ab 0% 15%, 
+                  #ffb95f 15% 35%, 
+                  #6bd8cb 35% 65%, 
+                  #29a195 65% 100%
+                )`
+              }}
+            />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-[#122131] rounded-full flex items-center justify-center border border-[#3d4947]">
               <div className="text-center">
-                <div className="text-3xl font-mono font-bold text-[#d4e4fa]">92%</div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-[#bcc9c6]">Success</div>
+                <p className="text-3xl font-mono font-bold text-[#d4e4fa]">{activeIncidents.length + resolvedCount}</p>
+                <p className="text-[10px] text-[#bcc9c6] uppercase font-bold">Total</p>
               </div>
             </div>
           </div>
 
-          <div className="space-y-2 text-xs">
-            <div className="flex justify-between items-center">
-              <span className="flex items-center gap-2 text-[#d4e4fa]"><span className="w-2 h-2 rounded-full bg-[#6bd8cb]" /> Resolved by Units</span>
-              <span className="font-mono font-bold">1,695</span>
+          <div className="w-full grid grid-cols-2 gap-4">
+            <div className="flex items-center justify-between bg-[#0d1c2d] p-2 rounded">
+              <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#ffb4ab] rounded" /><span className="text-xs text-[#bcc9c6]">On Site</span></div>
+              <span className="font-mono text-sm font-bold text-[#d4e4fa]">{onSiteCount}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="flex items-center gap-2 text-[#d4e4fa]"><span className="w-2 h-2 rounded-full bg-[#ffb3ad]" /> Cancelled / False Alarm</span>
-              <span className="font-mono font-bold">147</span>
+            <div className="flex items-center justify-between bg-[#0d1c2d] p-2 rounded">
+              <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#ffb95f] rounded" /><span className="text-xs text-[#bcc9c6]">En Route</span></div>
+              <span className="font-mono text-sm font-bold text-[#d4e4fa]">{enRouteCount}</span>
+            </div>
+            <div className="flex items-center justify-between bg-[#0d1c2d] p-2 rounded">
+              <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#6bd8cb] rounded" /><span className="text-xs text-[#bcc9c6]">Alert/Other</span></div>
+              <span className="font-mono text-sm font-bold text-[#d4e4fa]">{alertCount}</span>
+            </div>
+            <div className="flex items-center justify-between bg-[#0d1c2d] p-2 rounded">
+              <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#29a195] rounded" /><span className="text-xs text-[#bcc9c6]">Resolved</span></div>
+              <span className="font-mono text-sm font-bold text-[#d4e4fa]">{resolvedCount}</span>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="col-span-12 bg-[#122131] border border-[#3d4947] p-6 rounded-xl space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-sm font-bold text-[#d4e4fa]">24-Hour Drone Fleet Utilization Hourly Aggregate</h3>
-            <span className="text-xs font-mono text-[#6bd8cb]">PEAK HOURS: 14:00 - 18:00</span>
+      {/* TERRAIN BAR CHART */}
+      <div className="bg-[#122131] border border-[#3d4947] rounded-xl p-6">
+        <h3 className="font-bold text-sm text-[#d4e4fa] mb-4">Active Incidents by Terrain Type</h3>
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <div className="w-24 text-right text-xs text-[#bcc9c6] uppercase font-bold">Forest</div>
+            <div className="flex-1 bg-[#0d1c2d] h-4 rounded-full overflow-hidden">
+              <div className="h-full bg-[#29a195]" style={{ width: `${Math.max((forestCount / Math.max(activeIncidents.length, 1)) * 100, 2)}%` }} />
+            </div>
+            <div className="w-8 font-mono text-sm font-bold text-[#d4e4fa]">{forestCount}</div>
           </div>
-
-          <div className="grid grid-cols-24 gap-1 h-28 items-end">
-            {[20, 15, 12, 10, 25, 40, 60, 85, 100, 95, 80, 70, 65, 50, 85, 90, 70, 50, 40, 30, 25, 20, 15, 10].map((val, idx) => (
-              <div
-                key={idx}
-                className="bg-[#6bd8cb]/30 hover:bg-[#6bd8cb] rounded-t transition-colors cursor-pointer"
-                style={{ height: `${val}%` }}
-                title={`${idx}:00 - ${val}% utilization`}
-              />
-            ))}
+          <div className="flex items-center gap-4">
+            <div className="w-24 text-right text-xs text-[#bcc9c6] uppercase font-bold">Shrubland</div>
+            <div className="flex-1 bg-[#0d1c2d] h-4 rounded-full overflow-hidden">
+              <div className="h-full bg-[#ca8100]" style={{ width: `${Math.max((shrublandCount / Math.max(activeIncidents.length, 1)) * 100, 2)}%` }} />
+            </div>
+            <div className="w-8 font-mono text-sm font-bold text-[#d4e4fa]">{shrublandCount}</div>
           </div>
-
-          <div className="flex justify-between text-[10px] font-mono text-[#bcc9c6]">
-            <span>00:00</span><span>04:00</span><span>08:00</span><span>12:00</span><span>16:00</span><span>20:00</span><span>23:59</span>
+          <div className="flex items-center gap-4">
+            <div className="w-24 text-right text-xs text-[#bcc9c6] uppercase font-bold">Grassland</div>
+            <div className="flex-1 bg-[#0d1c2d] h-4 rounded-full overflow-hidden">
+              <div className="h-full bg-[#6bd8cb]" style={{ width: `${Math.max((grasslandCount / Math.max(activeIncidents.length, 1)) * 100, 2)}%` }} />
+            </div>
+            <div className="w-8 font-mono text-sm font-bold text-[#d4e4fa]">{grasslandCount}</div>
           </div>
         </div>
+      </div>
+
+      <div className="p-4 bg-[#0d1c2d] border border-[#3d4947] text-xs text-[#bcc9c6] flex items-start gap-2 rounded-lg">
+        <AlertTriangle className="w-4 h-4 text-[#6bd8cb] shrink-0" />
+        <p><strong>NOTE:</strong> ML confidence metrics will be available here once the AI detection pipeline is active. Currently showing field-reported and citizen-report data only.</p>
       </div>
     </div>
   );

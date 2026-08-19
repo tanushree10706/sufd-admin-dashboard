@@ -3,7 +3,7 @@ import { CommandCenterProvider, useCommandCenter } from './context/CommandCenter
 import { Navigation } from './components/Navigation';
 import { Header } from './components/Header';
 
-// Import All 11 Screens
+// Import All Screens
 import { LoginScreen } from './components/screens/LoginScreen';
 import { DashboardOverviewScreen } from './components/screens/DashboardOverviewScreen';
 import { IncidentDetailScreen } from './components/screens/IncidentDetailScreen';
@@ -15,6 +15,8 @@ import { HistoryScreen } from './components/screens/HistoryScreen';
 import { AnalyticsScreen } from './components/screens/AnalyticsScreen';
 import { UserManagementScreen } from './components/screens/UserManagementScreen';
 import { SettingsScreen } from './components/screens/SettingsScreen';
+import { SurveillanceScreen } from './components/screens/SurveillanceScreen';
+import { MLSurveillanceScreen } from './components/screens/MLSurveillanceScreen';
 
 const MainLayout: React.FC = () => {
   const { activeScreen, isAuthenticated } = useCommandCenter();
@@ -35,6 +37,10 @@ const MainLayout: React.FC = () => {
         return <DispatchQueueScreen />;
       case 'drones':
         return <DroneFleetScreen />;
+      case 'surveillance':
+        return <SurveillanceScreen />;
+      case 'ml_surveillance':
+        return <MLSurveillanceScreen />;
       case 'personnel':
         return <PersonnelScreen />;
       case 'stations':

@@ -25,7 +25,7 @@ export const PersonnelScreen: React.FC = () => {
           <Users className="w-6 h-6 text-[#6bd8cb]" />
           <div>
             <h2 className="text-xl font-bold text-[#d4e4fa]">Personnel & Responder Roster</h2>
-            <p className="text-xs text-[#bcc9c6]">Station ground crews, captain leads, and aerial drone tech specialists.</p>
+            <p className="text-xs text-[#bcc9c6]">Incident commanders, fire crew leads, hotshot crews, aerial observers, and drone operators.</p>
           </div>
         </div>
 
@@ -44,7 +44,7 @@ export const PersonnelScreen: React.FC = () => {
               onChange={(e) => setStationFilter(e.target.value)}
               className="w-full bg-[#0d1c2d] border border-[#3d4947] rounded-lg px-3 py-2 text-xs text-[#d4e4fa]"
             >
-              <option value="all">All Stations</option>
+              <option value="all">All Response Bases</option>
               {stations.map((st) => (
                 <option key={st.id} value={st.id}>{st.name}</option>
               ))}
@@ -100,7 +100,7 @@ export const PersonnelScreen: React.FC = () => {
 
                 <div className="space-y-1 text-xs text-[#bcc9c6]">
                   <p>Badge: <span className="font-mono text-[#d4e4fa]">{resp.badgeNumber}</span></p>
-                  <p>Base: <span className="text-[#d4e4fa]">{stationObj?.name || 'Station Alpha'}</span></p>
+                  <p>Base: <span className="text-[#d4e4fa]">{stationObj?.name || 'Gir Command Station'}</span></p>
                   <p className="flex items-center gap-1"><Phone className="w-3 h-3 text-[#6bd8cb]" /> {resp.phone}</p>
                 </div>
 

@@ -1,335 +1,217 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useCommandCenter } from '../../context/CommandCenterContext';
 import { MapComponent } from '../MapComponent';
-import {
-  AlertOctagon,
-  Plane,
-  Clock,
-  Building2,
-  AlertCircle,
-  List,
-  Rss,
-  X,
-  Thermometer,
-  Wind,
-  ShieldCheck
-} from 'lucide-react';
+import { Flame, Shield, Activity, AlertTriangle, ChevronRight, ScanEye } from 'lucide-react';
 
 export const DashboardOverviewScreen: React.FC = () => {
-  const {
-    incidents,
-    drones,
-    stations,
-    selectedIncidentId,
-    setSelectedIncidentId,
-    setActiveScreen,
-    assignNearestDrone
-  } = useCommandCenter();
+  const { incidents, drones, forestZones, setActiveScreen, setSelectedIncidentId } = useCommandCenter();
 
-  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+  const activeIncidents = incidents.filter(i => i.status !== 'resolved' && i.status !== 'cancelled');
+  const criticalCount = activeIncidents.filter(i => i.priority === 'critical').length;
+  const deployedDrones = drones.filter(d => d.status === 'en_route' || d.status === 'on_site').length;
+  
+  const incidentsWithContainment = activeIncidents.filter(i => i.containmentPercent !== undefined);
+  const avgContainment = incidentsWithContainment.length > 0
+    ? incidentsWithContainment.reduce((acc, i) => acc + (i.containmentPercent || 0), 0) / incidentsWithContainment.length
+    : 0;
 
-  const activeIncidents = incidents.filter((i) => i.status !== 'resolved' && i.status !== 'cancelled');
-  const activeDrones = drones.filter((d) => d.status === 'en_route' || d.status === 'on_site');
-  const pendingIncidents = incidents.filter((i) => !i.assignedDroneId && i.status !== 'resolved' && i.status !== 'cancelled');
+  const upToDateZones = forestZones.filter(z => z.surveillanceStatus === 'up_to_date').length;
+  const dueZones = forestZones.filter(z => z.surveillanceStatus === 'due').length;
+  const overdueZones = forestZones.filter(z => z.surveillanceStatus === 'overdue').length;
 
-  const selectedIncident = incidents.find((i) => i.id === selectedIncidentId) || activeIncidents[0];
+  const urgentZone = [...forestZones]
+    .filter(z => z.surveillanceStatus !== 'up_to_date')
+    .sort((a, b) => b.daysSinceSurveillance - a.daysSinceSurveillance)[0];
 
-  const handleRowClick = (id: string) => {
-    setSelectedIncidentId(id);
-    setIsDrawerOpen(true);
-  };
+  const activityFeed = [
+    { time: '14:22', text: 'Forest Officer reported wildfire — Western Ghats Reserve', type: 'alert' },
+    { time: '14:18', text: 'Wildfire report received from citizen — Tadoba Andhari Tiger Reserve', type: 'info' },
+    { time: '14:05', text: 'Response Base assigned to INC-IND-103', type: 'info' },
+    { time: '13:58', text: 'Drone DRONE-GARUDA-03 reached incident coordinates', type: 'success' },
+    { time: '13:45', text: 'Wildfire severity escalated to HIGH — INC-IND-102', type: 'alert' },
+    { time: '13:30', text: 'Containment increased to 15% — INC-IND-104', type: 'success' },
+    { time: '13:10', text: '⚠ Surveillance due: Sundarbans Biosphere (21 days)', type: 'alert' },
+  ];
 
   return (
     <div className="space-y-6 pb-12">
-      {/* 5-Metric Summary Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="bg-[#0d1c2d] border border-[#3d4947] p-4 rounded-lg stat-card-glow flex flex-col justify-between">
-          <p className="text-[11px] font-bold text-[#bcc9c6] uppercase tracking-wider mb-1">Active Incidents</p>
-          <div className="flex items-end justify-between">
-            <span className="text-3xl font-mono font-bold text-[#ffb4ab]">
-              {activeIncidents.length.toString().padStart(2, '0')}
-            </span>
-            <AlertOctagon className="w-8 h-8 text-[#ffb4ab]/40" />
+      {/* TOP STAT CARDS ROW */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="bg-[#122131] border border-[#3d4947] rounded-xl p-4 stat-card-glow cursor-pointer" onClick={() => setActiveScreen('dispatch')}>
+          <div className="flex justify-between items-start mb-2">
+            <Flame className="w-5 h-5 text-[#6bd8cb]" />
+            <span className="text-2xl font-mono font-bold text-[#d4e4fa]">{activeIncidents.length}</span>
           </div>
+          <p className="text-[10px] text-[#bcc9c6] uppercase font-bold tracking-wider">Active Wildfires</p>
         </div>
-
-        <div className="bg-[#0d1c2d] border border-[#3d4947] p-4 rounded-lg stat-card-glow flex flex-col justify-between">
-          <p className="text-[11px] font-bold text-[#bcc9c6] uppercase tracking-wider mb-1">Drones Deployed</p>
-          <div className="flex items-end justify-between">
-            <span className="text-3xl font-mono font-bold text-[#6bd8cb]">
-              {activeDrones.length.toString().padStart(2, '0')}
-            </span>
-            <Plane className="w-8 h-8 text-[#6bd8cb]/40" />
+        
+        <div className="bg-[#122131] border border-[#3d4947] rounded-xl p-4 stat-card-glow cursor-pointer" onClick={() => setActiveScreen('dispatch')}>
+          <div className="flex justify-between items-start mb-2">
+            <AlertTriangle className="w-5 h-5 text-[#ffb4ab]" />
+            <span className="text-2xl font-mono font-bold text-[#ffb4ab]">{criticalCount}</span>
           </div>
+          <p className="text-[10px] text-[#bcc9c6] uppercase font-bold tracking-wider">Critical</p>
         </div>
-
-        <div className="bg-[#0d1c2d] border border-[#3d4947] p-4 rounded-lg stat-card-glow flex flex-col justify-between">
-          <p className="text-[11px] font-bold text-[#bcc9c6] uppercase tracking-wider mb-1">Avg Response</p>
-          <div className="flex items-end justify-between">
-            <span className="text-3xl font-mono font-bold text-[#ffb95f]">4m 12s</span>
-            <Clock className="w-8 h-8 text-[#ffb95f]/40" />
+        
+        <div className="bg-[#122131] border border-[#3d4947] rounded-xl p-4 stat-card-glow cursor-pointer" onClick={() => setActiveScreen('drones')}>
+          <div className="flex justify-between items-start mb-2">
+            <Activity className="w-5 h-5 text-[#6bd8cb]" />
+            <span className="text-2xl font-mono font-bold text-[#d4e4fa]">{deployedDrones}</span>
           </div>
+          <p className="text-[10px] text-[#bcc9c6] uppercase font-bold tracking-wider">Drones Deployed</p>
         </div>
-
-        <div className="bg-[#0d1c2d] border border-[#3d4947] p-4 rounded-lg stat-card-glow flex flex-col justify-between">
-          <p className="text-[11px] font-bold text-[#bcc9c6] uppercase tracking-wider mb-1">Stations Online</p>
-          <div className="flex items-end justify-between">
-            <span className="text-3xl font-mono font-bold text-[#d4e4fa]">
-              {stations.length}
-            </span>
-            <Building2 className="w-8 h-8 text-[#bcc9c6]/40" />
+        
+        <div className="bg-[#122131] border border-[#3d4947] rounded-xl p-4 stat-card-glow">
+          <div className="flex justify-between items-start mb-2">
+            <Shield className="w-5 h-5 text-[#6bd8cb]" />
+            <span className="text-2xl font-mono font-bold text-[#d4e4fa]">{avgContainment.toFixed(1)}%</span>
           </div>
+          <p className="text-[10px] text-[#bcc9c6] uppercase font-bold tracking-wider">Avg Containment</p>
         </div>
-
-        <div className="bg-[#0d1c2d] border border-[#3d4947] p-4 rounded-lg stat-card-glow flex flex-col justify-between">
-          <p className="text-[11px] font-bold text-[#bcc9c6] uppercase tracking-wider mb-1">Pending Assignments</p>
-          <div className="flex items-end justify-between">
-            <span className="text-3xl font-mono font-bold text-[#d4e4fa]">
-              {pendingIncidents.length.toString().padStart(2, '0')}
-            </span>
-            <AlertCircle className="w-8 h-8 text-[#bcc9c6]/40" />
+        
+        <div className="bg-[#122131] border border-[#3d4947] rounded-xl p-4 stat-card-glow cursor-pointer" onClick={() => setActiveScreen('surveillance')}>
+          <div className="flex justify-between items-start mb-2">
+            <ScanEye className="w-5 h-5 text-[#6bd8cb]" />
+            <span className="text-2xl font-mono font-bold text-[#d4e4fa]">{forestZones.length}</span>
           </div>
+          <p className="text-[10px] text-[#bcc9c6] uppercase font-bold tracking-wider">Zones Monitored</p>
         </div>
       </div>
 
-      {/* Main Grid: Left (Table + Map), Right (Activity Feed) */}
-      <div className="grid grid-cols-12 gap-6">
-        {/* Left Side (Col 9) */}
-        <div className="col-span-12 lg:col-span-9 space-y-6">
-          {/* Live Incident Queue */}
-          <section className="bg-[#122131] border border-[#3d4947] rounded-xl overflow-hidden">
-            <div className="px-6 py-3 bg-[#1c2b3c] border-b border-[#3d4947] flex justify-between items-center">
-              <div className="flex items-center space-x-2">
-                <List className="w-5 h-5 text-[#6bd8cb]" />
-                <h2 className="text-base font-bold text-[#d4e4fa]">Live Incident Queue</h2>
-              </div>
-              <button
-                onClick={() => setActiveScreen('dispatch')}
-                className="text-xs font-bold text-[#6bd8cb] hover:underline"
-              >
-                View Dispatch Queue →
-              </button>
-            </div>
+      {/* MAP LEGEND */}
+      <div className="flex items-center space-x-6 text-xs text-[#bcc9c6] bg-[#0d1c2d] p-2 rounded-lg border border-[#3d4947] w-fit">
+        <div className="flex items-center space-x-2"><span className="text-lg">🔥</span><span>Wildfire Incident</span></div>
+        <div className="flex items-center space-x-2"><span className="text-lg">✈️</span><span>Active Drone</span></div>
+        <div className="flex items-center space-x-2"><span className="text-lg">⛺</span><span>Response Base</span></div>
+      </div>
 
+      {/* MAIN GRID */}
+      <div className="grid grid-cols-12 gap-6">
+        {/* Left Col */}
+        <div className="col-span-12 lg:col-span-8 space-y-6">
+          <div className="bg-[#122131] border border-[#3d4947] rounded-xl overflow-hidden p-2">
+            <MapComponent height="380px" />
+          </div>
+          
+          <div className="bg-[#122131] border border-[#3d4947] rounded-xl overflow-hidden">
+            <div className="px-5 py-4 border-b border-[#3d4947] flex justify-between items-center">
+              <h3 className="font-bold text-sm text-[#d4e4fa]">Active Wildfire Incidents</h3>
+              <button onClick={() => setActiveScreen('dispatch')} className="text-xs text-[#6bd8cb] hover:underline flex items-center">View All <ChevronRight className="w-3 h-3" /></button>
+            </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-[#0d1c2d] border-b border-[#3d4947] text-[11px] font-bold uppercase text-[#bcc9c6]">
-                    <th className="px-4 py-3">ID</th>
-                    <th className="px-4 py-3">Location</th>
-                    <th className="px-4 py-3">Time</th>
-                    <th className="px-4 py-3">Priority</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Assigned Drone</th>
-                    <th className="px-4 py-3 text-right">Action</th>
+              <table className="w-full text-left">
+                <thead className="bg-[#0d1c2d] text-[10px] font-bold uppercase text-[#bcc9c6]">
+                  <tr>
+                    <th className="px-5 py-3">ID</th>
+                    <th className="px-5 py-3">Location / Sector</th>
+                    <th className="px-5 py-3">Priority</th>
+                    <th className="px-5 py-3">Status</th>
+                    <th className="px-5 py-3">Source</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#3d4947]/50 text-sm">
-                  {incidents.map((inc) => (
-                    <tr
-                      key={inc.id}
-                      onClick={() => handleRowClick(inc.id)}
-                      className={`hover:bg-[#273647] transition-colors cursor-pointer ${
-                        inc.slaBreached ? 'sla-red-pulse' : ''
-                      }`}
-                    >
-                      <td className="px-4 py-3 font-mono text-[#6bd8cb] font-bold">{inc.id}</td>
-                      <td className="px-4 py-3 font-medium text-[#d4e4fa]">{inc.address}</td>
-                      <td className="px-4 py-3 font-mono text-xs text-[#bcc9c6]">{inc.reportedAt}</td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                            inc.priority === 'critical'
-                              ? 'bg-[#93000a] text-white'
-                              : inc.priority === 'high'
-                              ? 'bg-[#ca8100] text-white'
-                              : 'bg-[#273647] text-[#bcc9c6]'
-                          }`}
-                        >
-                          {inc.priority}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center space-x-2">
-                          <span
-                            className={`w-2 h-2 rounded-full ${
-                              inc.status === 'on_site'
-                                ? 'bg-[#ffb4ab] animate-pulse'
-                                : inc.status === 'en_route'
-                                ? 'bg-[#6bd8cb]'
-                                : 'bg-[#bcc9c6]'
-                            }`}
-                          />
-                          <span className="capitalize text-xs text-[#d4e4fa]">
-                            {inc.status.replace('_', ' ')}
+                  {activeIncidents.slice(0, 5).map(inc => {
+                    const srcBadge = inc.detectionSource === 'citizen' ? 'bg-[#29a195]/20 text-[#6bd8cb]' : 
+                                     inc.detectionSource === 'forest_officer' ? 'bg-[#ca8100]/20 text-[#ffb95f]' : 
+                                     'bg-[#8b5cf6]/20 text-[#c4b5fd]';
+                    
+                    return (
+                      <tr 
+                        key={inc.id} 
+                        onClick={() => { setSelectedIncidentId(inc.id); setActiveScreen('incident_detail'); }}
+                        className={`hover:bg-[#1c2b3c] cursor-pointer transition-colors ${inc.slaBreached ? 'sla-red-pulse' : ''}`}
+                      >
+                        <td className="px-5 py-3 font-mono text-xs text-[#6bd8cb] font-bold">{inc.id}</td>
+                        <td className="px-5 py-3 text-xs text-[#d4e4fa]">{inc.title}</td>
+                        <td className="px-5 py-3">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${inc.priority === 'critical' ? 'bg-[#93000a] text-white' : 'bg-[#ca8100] text-white'}`}>
+                            {inc.priority}
                           </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 font-mono text-xs text-[#bcc9c6]">
-                        {inc.assignedDroneId || <span className="text-[#ffb4ab]">UNASSIGNED</span>}
-                      </td>
-                      <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                        {!inc.assignedDroneId ? (
-                          <button
-                            onClick={() => assignNearestDrone(inc.id)}
-                            className="px-3 py-1 bg-[#6bd8cb] text-[#003732] text-xs font-bold rounded hover:brightness-110"
-                          >
-                            Assign Nearest
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleRowClick(inc.id)}
-                            className="text-xs text-[#6bd8cb] hover:underline"
-                          >
-                            Inspect
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-5 py-3 text-xs text-[#bcc9c6] capitalize">{inc.status.replace('_', ' ')}</td>
+                        <td className="px-5 py-3">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${srcBadge}`}>
+                            {inc.detectionSource.replace('_', ' ')}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
-          </section>
-
-          {/* Mini Live Map Section */}
-          <section className="bg-[#122131] border border-[#3d4947] rounded-xl overflow-hidden h-[380px] flex flex-col">
-            <div className="px-6 py-3 bg-[#1c2b3c] border-b border-[#3d4947] flex justify-between items-center">
-              <h2 className="text-base font-bold text-[#d4e4fa] flex items-center gap-2">
-                <span>📍</span> Live Operations Map
-              </h2>
-              <div className="flex items-center space-x-4 text-xs font-mono text-[#bcc9c6]">
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#ffb4ab]" /> Fire Incident</span>
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#6bd8cb]" /> Active Drone</span>
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#273647]" /> Fire Station</span>
-              </div>
-            </div>
-            <div className="flex-1 relative">
-              <MapComponent height="100%" />
-            </div>
-          </section>
+          </div>
         </div>
 
-        {/* Right Side Activity Feed (Col 3) */}
-        <aside className="col-span-12 lg:col-span-3">
-          <section className="bg-[#122131] border border-[#3d4947] rounded-xl h-full flex flex-col">
-            <div className="px-4 py-3 bg-[#1c2b3c] border-b border-[#3d4947] flex items-center space-x-2">
-              <Rss className="w-4 h-4 text-[#6bd8cb]" />
-              <h2 className="text-base font-bold text-[#d4e4fa]">Activity Feed</h2>
+        {/* Right Col */}
+        <div className="col-span-12 lg:col-span-4 space-y-6">
+          {/* SURVEILLANCE STATUS WIDGET */}
+          <div className="bg-[#122131] border border-[#3d4947] rounded-xl p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <ScanEye className="w-5 h-5 text-[#6bd8cb]" />
+              <h3 className="font-bold text-sm text-[#d4e4fa]">SURVEILLANCE STATUS</h3>
             </div>
-
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-              <div className="relative pl-6 pb-4 border-l border-[#3d4947]">
-                <div className="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-[#6bd8cb]" />
-                <p className="text-[10px] font-mono text-[#6bd8cb]">14:22:15</p>
-                <p className="text-xs text-[#d4e4fa] leading-snug">Drone DR-402 arrived at Oak Ridge. Visual thermal confirmed.</p>
-                <p className="text-[10px] uppercase text-[#bcc9c6] mt-0.5">Disp-09: Unit On-Site</p>
+            
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="bg-[#0d1c2d] border border-[#3d4947] rounded-lg p-3 text-center">
+                <p className="text-[10px] text-[#bcc9c6] uppercase font-bold">Total Zones</p>
+                <p className="text-xl font-mono font-bold text-[#d4e4fa]">{forestZones.length}</p>
               </div>
-
-              <div className="relative pl-6 pb-4 border-l border-[#3d4947]">
-                <div className="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-[#ffb4ab]" />
-                <p className="text-[10px] font-mono text-[#ffb4ab]">14:22:05</p>
-                <p className="text-xs text-[#d4e4fa] leading-snug">Emergency IoT sensor #882 activated at Oak Ridge Sector 4.</p>
-                <p className="text-[10px] uppercase text-[#bcc9c6] mt-0.5">Sys-Auto: Critical Alert</p>
-              </div>
-
-              <div className="relative pl-6 pb-4 border-l border-[#3d4947]">
-                <div className="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-[#bcc9c6]" />
-                <p className="text-[10px] font-mono text-[#bcc9c6]">14:18:30</p>
-                <p className="text-xs text-[#d4e4fa] leading-snug">Drone DR-901 launch sequence initiated from Station 02.</p>
-                <p className="text-[10px] uppercase text-[#bcc9c6] mt-0.5">Disp-02: Deployment</p>
-              </div>
-
-              <div className="relative pl-6 pb-4 border-l border-[#3d4947]">
-                <div className="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-[#ffb95f]" />
-                <p className="text-[10px] font-mono text-[#ffb95f]">14:18:12</p>
-                <p className="text-xs text-[#d4e4fa] leading-snug">New high-priority smoke report at Harbor Vista Dr. (OTP Verified).</p>
-                <p className="text-[10px] uppercase text-[#bcc9c6] mt-0.5">Sys-External: 911 Link</p>
-              </div>
-
-              <div className="relative pl-6 pb-4 border-l border-[#3d4947]">
-                <div className="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-[#bcc9c6]" />
-                <p className="text-[10px] font-mono text-[#bcc9c6]">14:15:00</p>
-                <p className="text-xs text-[#d4e4fa] leading-snug">Scheduled battery swap completed for Drone DR-405.</p>
-                <p className="text-[10px] uppercase text-[#bcc9c6] mt-0.5">Maint: Fleet Status</p>
+              <div 
+                className={`border rounded-lg p-3 text-center cursor-pointer transition-colors ${
+                  dueZones > 0 || overdueZones > 0 ? 'bg-[#ca8100]/20 border-[#ca8100]/40 hover:bg-[#ca8100]/30' : 'bg-[#0d1c2d] border-[#3d4947] hover:bg-[#1c2b3c]'
+                }`}
+                onClick={() => setActiveScreen('surveillance')}
+              >
+                <p className={`text-[10px] uppercase font-bold ${dueZones > 0 || overdueZones > 0 ? 'text-[#ffb95f]' : 'text-[#bcc9c6]'}`}>Surveillance Due</p>
+                <p className={`text-xl font-mono font-bold ${dueZones > 0 || overdueZones > 0 ? 'text-[#ffb95f]' : 'text-[#d4e4fa]'}`}>{dueZones + overdueZones}</p>
               </div>
             </div>
-          </section>
-        </aside>
+            
+            <div className="flex items-center justify-between text-xs mb-4 px-1">
+              <span className="text-[#bcc9c6] flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#29a195]" /> Up to Date: {upToDateZones}</span>
+              <span className="text-[#ffb4ab] flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#ffb4ab]" /> Overdue: {overdueZones}</span>
+            </div>
+            
+            {urgentZone && (
+              <div className="bg-[#93000a]/20 border border-[#ffb4ab]/30 p-3 rounded-lg flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-[#ffb4ab] shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-[11px] font-bold text-[#ffb4ab] uppercase">Urgent Zone: {urgentZone.name}</p>
+                  <p className="text-[10px] text-[#ffb4ab]/80">Not surveyed for {urgentZone.daysSinceSurveillance} days. Recommend immediate drone patrol.</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ACTIVITY FEED */}
+          <div className="bg-[#122131] border border-[#3d4947] rounded-xl p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Activity className="w-5 h-5 text-[#6bd8cb]" />
+              <h3 className="font-bold text-sm text-[#d4e4fa]">LIVE ACTIVITY</h3>
+            </div>
+            
+            <div className="space-y-4 max-h-[350px] overflow-y-auto custom-scrollbar pr-2">
+              {activityFeed.map((entry, idx) => {
+                const color = entry.type === 'alert' ? 'text-[#ffb4ab] border-[#ffb4ab]' : 
+                              entry.type === 'success' ? 'text-[#6bd8cb] border-[#6bd8cb]' : 
+                              'text-[#d4e4fa] border-[#3d4947]';
+                return (
+                  <div key={idx} className="flex gap-3 items-start relative before:content-[''] before:absolute before:left-2.5 before:top-6 before:bottom-[-16px] before:w-px before:bg-[#3d4947] last:before:hidden">
+                    <div className={`w-5 h-5 rounded-full border-2 bg-[#051424] flex items-center justify-center shrink-0 z-10 ${color}`}>
+                      <div className={`w-1.5 h-1.5 rounded-full ${entry.type === 'alert' ? 'bg-[#ffb4ab]' : entry.type === 'success' ? 'bg-[#6bd8cb]' : 'bg-[#bcc9c6]'}`} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-mono text-[#bcc9c6] mb-0.5">{entry.time} UTC</p>
+                      <p className={`text-xs ${entry.type === 'alert' ? 'font-bold text-[#ffb4ab]' : 'text-[#d4e4fa]'}`}>{entry.text}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </div>
-
-      {/* Slide-in Incident Detail Drawer */}
-      {isDrawerOpen && selectedIncident && (
-        <div className="fixed right-0 top-0 h-full w-[400px] bg-[#1c2b3c] border-l border-[#3d4947] shadow-2xl z-50 flex flex-col p-6 space-y-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <h3 className="text-lg font-bold text-[#d4e4fa]">Incident Details</h3>
-              <p className="text-xs font-mono text-[#6bd8cb]">{selectedIncident.id}</p>
-            </div>
-            <button
-              onClick={() => setIsDrawerOpen(false)}
-              className="p-1 hover:bg-[#273647] rounded text-[#bcc9c6]"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-1">
-            <div className="bg-[#122131] p-4 border border-[#3d4947] rounded-lg space-y-2">
-              <p className="text-[11px] font-bold uppercase text-[#bcc9c6]">Live Telemetry Snapshot</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center space-x-2">
-                  <Wind className="w-4 h-4 text-[#6bd8cb]" />
-                  <div>
-                    <p className="text-[10px] text-[#bcc9c6]">Wind Speed</p>
-                    <p className="text-xs font-mono font-bold text-[#d4e4fa]">{selectedIncident.windSpeed || '12.0 km/h NW'}</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Thermometer className="w-4 h-4 text-[#ffb4ab]" />
-                  <div>
-                    <p className="text-[10px] text-[#bcc9c6]">Max Temp</p>
-                    <p className="text-xs font-mono font-bold text-[#ffb4ab]">{selectedIncident.temperatureMax || 412}°C</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-[11px] font-bold uppercase text-[#bcc9c6]">Assigned Unit</p>
-              <div className="p-3 bg-[#0d1c2d] border border-[#3d4947] rounded-lg flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Plane className="w-5 h-5 text-[#6bd8cb]" />
-                  <span className="text-sm text-[#d4e4fa] font-mono">
-                    {selectedIncident.assignedDroneId || 'None Assigned'}
-                  </span>
-                </div>
-                <span className="text-xs text-[#bcc9c6]">Active</span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-[11px] font-bold uppercase text-[#bcc9c6]">Location Address</p>
-              <p className="text-xs text-[#d4e4fa] bg-[#0d1c2d] p-3 border border-[#3d4947] rounded-lg">
-                {selectedIncident.address}
-              </p>
-            </div>
-          </div>
-
-          <div className="pt-4 border-t border-[#3d4947] space-y-2">
-            <button
-              onClick={() => {
-                setIsDrawerOpen(false);
-                setActiveScreen('incident_detail');
-              }}
-              className="w-full py-3 bg-[#6bd8cb] text-[#003732] font-bold text-xs rounded-lg hover:brightness-110 flex items-center justify-center space-x-2"
-            >
-              <ShieldCheck className="w-4 h-4" />
-              <span>FULL INCIDENT INSPECTOR</span>
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

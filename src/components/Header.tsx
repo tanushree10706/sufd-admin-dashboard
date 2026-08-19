@@ -41,7 +41,9 @@ export const Header: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const criticalCount = incidents.filter((i) => i.priority === 'critical' && i.status !== 'resolved' && i.status !== 'cancelled').length;
+  const criticalCount = incidents.filter(
+    (i) => i.priority === 'critical' && i.status !== 'resolved' && i.status !== 'cancelled'
+  ).length;
 
   const searchResults = searchQuery.trim()
     ? incidents.filter(
@@ -62,7 +64,7 @@ export const Header: React.FC = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search incident ID, address, or drone unit..."
+            placeholder="Search wildfire ID, location, or terrain sector..."
             className="w-full bg-[#0d1c2d] border border-[#3d4947] rounded-lg pl-9 pr-4 py-1.5 text-sm text-[#d4e4fa] focus:outline-none focus:border-[#6bd8cb] placeholder:text-[#bcc9c6]/50 font-sans"
           />
         </div>
@@ -84,9 +86,11 @@ export const Header: React.FC = () => {
                   <span className="font-mono text-[#6bd8cb] text-xs font-bold mr-2">{inc.id}</span>
                   <span className="text-xs text-[#d4e4fa] truncate">{inc.address}</span>
                 </div>
-                <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
-                  inc.priority === 'critical' ? 'bg-[#93000a] text-white' : 'bg-[#ca8100] text-white'
-                }`}>
+                <span
+                  className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
+                    inc.priority === 'critical' ? 'bg-[#93000a] text-white' : 'bg-[#ca8100] text-white'
+                  }`}
+                >
                   {inc.priority}
                 </span>
               </button>
@@ -99,13 +103,13 @@ export const Header: React.FC = () => {
       <div className="flex items-center space-x-4">
         {/* Critical Alert Indicator */}
         {criticalCount > 0 && (
-          <div 
+          <div
             onClick={() => setActiveScreen('dispatch')}
             className="flex items-center space-x-2 px-3 py-1 bg-[#93000a]/30 border border-[#ffb4ab]/40 rounded-lg cursor-pointer animate-pulse hover:bg-[#93000a]/50 transition-colors"
           >
             <AlertTriangle className="w-4 h-4 text-[#ffb4ab]" />
             <span className="text-xs font-bold text-white uppercase tracking-wider">
-              {criticalCount} CRITICAL ALERT{criticalCount > 1 ? 'S' : ''}
+              {criticalCount} CRITICAL WILDFIRE{criticalCount > 1 ? 'S' : ''}
             </span>
           </div>
         )}
@@ -119,7 +123,7 @@ export const Header: React.FC = () => {
         {/* Simulation Play/Pause Toggle */}
         <button
           onClick={toggleSimulation}
-          title={isSimulating ? "Pause real-time telemetry simulation" : "Resume simulation"}
+          title={isSimulating ? 'Pause real-time telemetry simulation' : 'Resume simulation'}
           className={`flex items-center space-x-1.5 px-3 py-1 rounded-lg border text-xs font-bold transition-colors ${
             isSimulating
               ? 'bg-[#6bd8cb]/10 text-[#6bd8cb] border-[#6bd8cb]/40 hover:bg-[#6bd8cb]/20'
@@ -136,10 +140,14 @@ export const Header: React.FC = () => {
         {/* Sound Toggle */}
         <button
           onClick={toggleSoundAlerts}
-          title={soundAlerts ? "Mute audio alarms" : "Enable audio alarms"}
+          title={soundAlerts ? 'Mute audio alarms' : 'Enable audio alarms'}
           className="p-2 text-[#bcc9c6] hover:bg-[#273647] rounded-full transition-colors"
         >
-          {soundAlerts ? <Volume2 className="w-4 h-4 text-[#6bd8cb]" /> : <VolumeX className="w-4 h-4 text-[#bcc9c6]" />}
+          {soundAlerts ? (
+            <Volume2 className="w-4 h-4 text-[#6bd8cb]" />
+          ) : (
+            <VolumeX className="w-4 h-4 text-[#bcc9c6]" />
+          )}
         </button>
 
         {/* Notifications Bell */}
@@ -161,13 +169,18 @@ export const Header: React.FC = () => {
           {showNotifications && (
             <div className="absolute right-0 top-full mt-2 w-80 bg-[#122131] border border-[#3d4947] rounded-lg shadow-2xl z-50 p-4 space-y-3">
               <div className="flex justify-between items-center border-b border-[#3d4947] pb-2">
-                <h4 className="text-xs font-bold text-[#d4e4fa] uppercase tracking-wider">Live System Alerts</h4>
+                <h4 className="text-xs font-bold text-[#d4e4fa] uppercase tracking-wider">
+                  Live Wildfire Alerts
+                </h4>
                 <span className="text-[10px] text-[#6bd8cb] font-mono">REALTIME</span>
               </div>
 
               <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
                 {incidents.slice(0, 4).map((inc) => (
-                  <div key={inc.id} className="p-2 bg-[#0d1c2d] border border-[#3d4947] rounded text-xs space-y-1">
+                  <div
+                    key={inc.id}
+                    className="p-2 bg-[#0d1c2d] border border-[#3d4947] rounded text-xs space-y-1"
+                  >
                     <div className="flex justify-between font-mono text-[#6bd8cb]">
                       <span>{inc.id}</span>
                       <span className="text-[10px] text-[#bcc9c6]">{inc.reportedAt}</span>
@@ -187,7 +200,11 @@ export const Header: React.FC = () => {
           title="Toggle Command Center Theme"
           className="p-2 text-[#bcc9c6] hover:bg-[#273647] rounded-full transition-colors"
         >
-          {isDarkMode ? <Moon className="w-4 h-4 text-[#6bd8cb]" /> : <Sun className="w-4 h-4" />}
+          {isDarkMode ? (
+            <Moon className="w-4 h-4 text-[#6bd8cb]" />
+          ) : (
+            <Sun className="w-4 h-4" />
+          )}
         </button>
       </div>
     </header>

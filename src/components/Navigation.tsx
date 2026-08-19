@@ -6,37 +6,41 @@ import {
   Siren,
   Plane,
   Users,
-  Building2,
+  TreePine,
   History,
   BarChart3,
   UserCog,
   Settings,
   LogOut,
   ShieldCheck,
-  User
+  User,
+  ScanEye,
+  Camera
 } from 'lucide-react';
 
 export const Navigation: React.FC = () => {
   const { activeScreen, setActiveScreen, currentUser, setCurrentUserRole, logout } = useCommandCenter();
 
   const navItems = [
-    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'dispatch', label: 'Dispatch Queue', icon: Siren },
-    { id: 'drones', label: 'Drones', icon: Plane },
-    { id: 'personnel', label: 'Personnel', icon: Users },
-    { id: 'stations', label: 'Stations', icon: Building2 },
-    { id: 'history', label: 'History', icon: History },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'users', label: 'User Access', icon: UserCog, adminOnly: true },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'overview',     label: 'Overview',          icon: LayoutDashboard },
+    { id: 'dispatch',     label: 'Dispatch Queue',     icon: Siren },
+    { id: 'drones',       label: 'Drone Fleet',        icon: Plane },
+    { id: 'surveillance', label: 'Last Surveillance',  icon: ScanEye },
+    { id: 'ml_surveillance', label: 'AI Aerial Feed', icon: Camera },
+    { id: 'personnel',   label: 'Personnel',          icon: Users },
+    { id: 'stations',    label: 'Response Bases',     icon: TreePine },
+    { id: 'history',     label: 'History',            icon: History },
+    { id: 'analytics',   label: 'Analytics',          icon: BarChart3 },
+    { id: 'users',       label: 'User Access',        icon: UserCog, adminOnly: true },
+    { id: 'settings',    label: 'Settings',           icon: Settings },
   ];
 
   return (
     <aside className="fixed left-0 top-0 h-full w-[240px] bg-[#0d1c2d] border-r border-[#3d4947] flex flex-col py-6 z-50 select-none">
       {/* Brand Header */}
       <div className="px-6 mb-8 cursor-pointer" onClick={() => setActiveScreen('overview')}>
-        <h1 className="font-bold text-[#6bd8cb] text-[20px] leading-[28px] tracking-tight">SmartFlame</h1>
-        <p className="text-[10px] text-[#bcc9c6] tracking-[0.2em] uppercase font-bold">SUFD Command Center</p>
+        <h1 className="font-bold text-[#6bd8cb] text-[20px] leading-[28px] tracking-tight">Aranyak</h1>
+        <p className="text-[10px] text-[#bcc9c6] tracking-[0.2em] uppercase font-bold">Wildfire Detection &amp; Response</p>
       </div>
 
       {/* Nav List */}
@@ -77,8 +81,8 @@ export const Navigation: React.FC = () => {
                 <p className="text-[10px] text-[#bcc9c6] uppercase font-bold">{currentUser.role.replace('_', ' ')}</p>
               </div>
             </div>
-            <button 
-              onClick={logout} 
+            <button
+              onClick={logout}
               title="Log out"
               className="p-1 hover:bg-[#273647] text-[#bcc9c6] hover:text-[#ffb4ab] rounded transition-colors"
             >

@@ -7,6 +7,7 @@ import { useCommandCenter } from '../context/CommandCenterContext';
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 
 // Custom HTML Icons using Leaflet divIcon
+
 const createIncidentIcon = (priority: string) => {
   const color = priority === 'critical' ? '#ffb4ab' : priority === 'high' ? '#ffb95f' : '#6bd8cb';
   return L.divIcon({
@@ -57,6 +58,7 @@ const createDroneIcon = (status: string) => {
   });
 };
 
+/** Response Base / Fire Camp marker — tent icon represents a field base */
 const createStationIcon = () => {
   return L.divIcon({
     className: 'custom-map-icon',
@@ -64,14 +66,14 @@ const createStationIcon = () => {
       <div style="
         width: 26px;
         height: 26px;
-        background: #273647;
+        background: #1c2b3c;
         border: 2px solid #6bd8cb;
-        border-radius: 50%;
+        border-radius: 4px;
         display: flex;
         align-items: center;
         justify-content: center;
       ">
-        <span style="font-size: 14px;">🏢</span>
+        <span style="font-size: 14px;">⛺</span>
       </div>
     `,
     iconSize: [26, 26],
@@ -97,8 +99,9 @@ interface MapComponentProps {
 }
 
 export const MapComponent: React.FC<MapComponentProps> = ({
-  center = [34.0522, -118.2437],
-  zoom = 13,
+  // Default center: Tadoba Andhari Tiger Reserve
+  center = [20.2450, 79.3038],
+  zoom = 11,
   height = '100%',
   showStations = true,
   showDrones = true,
@@ -121,7 +124,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
 
-        {/* Stations & Coverage Radii */}
+        {/* Response Bases & Coverage Radii */}
         {showStations &&
           stations.map((st) => (
             <React.Fragment key={st.id}>
@@ -134,21 +137,21 @@ export const MapComponent: React.FC<MapComponentProps> = ({
                     <p className="font-bold text-xs text-[#6bd8cb]">{st.name}</p>
                     <p className="text-[11px] text-[#d4e4fa]">{st.address}</p>
                     <div className="text-[10px] text-[#bcc9c6] font-mono">
-                      <span>Drones Docked: {st.dockedDrones}/{st.totalDrones}</span> | 
-                      <span> Available Staff: {st.availableResponders}/{st.totalResponders}</span>
+                      <span>Drones Docked: {st.dockedDrones}/{st.totalDrones}</span> |{' '}
+                      <span>Available Crew: {st.availableResponders}/{st.totalResponders}</span>
                     </div>
                   </div>
                 </Popup>
               </Marker>
               <Circle
                 center={[st.location.latitude, st.location.longitude]}
-                radius={2500}
-                pathOptions={{ color: '#6bd8cb', weight: 1, dashArray: '4, 4', fillOpacity: 0.05 }}
+                radius={3000}
+                pathOptions={{ color: '#6bd8cb', weight: 1, dashArray: '4, 4', fillOpacity: 0.04 }}
               />
             </React.Fragment>
           ))}
 
-        {/* Incidents */}
+        {/* Wildfire Incidents */}
         {incidents
           .filter((i) => i.status !== 'resolved' && i.status !== 'cancelled')
           .map((inc) => (
@@ -161,16 +164,25 @@ export const MapComponent: React.FC<MapComponentProps> = ({
                 <div className="p-1 space-y-2 max-w-xs">
                   <div className="flex justify-between items-center">
                     <span className="font-mono text-xs font-bold text-[#6bd8cb]">{inc.id}</span>
-                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
-                      inc.priority === 'critical' ? 'bg-[#93000a] text-white' : 'bg-[#ca8100] text-white'
-                    }`}>
+                    <span
+                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                        inc.priority === 'critical' ? 'bg-[#93000a] text-white' : 'bg-[#ca8100] text-white'
+                      }`}
+                    >
                       {inc.priority}
                     </span>
                   </div>
                   <p className="font-bold text-xs text-[#d4e4fa] leading-tight">{inc.title}</p>
                   <p className="text-[11px] text-[#bcc9c6]">{inc.address}</p>
                   {inc.temperatureMax && (
-                    <p className="text-[10px] font-mono text-[#ffb4ab]">Max Temp: {inc.temperatureMax}°C</p>
+                    <p className="text-[10px] font-mono text-[#ffb4ab]">
+                      Thermal: {inc.temperatureMax}°C
+                    </p>
+                  )}
+                  {inc.containmentPercent !== undefined && (
+                    <p className="text-[10px] font-mono text-[#ffb95f]">
+                      Containment: {inc.containmentPercent.toFixed(0)}%
+                    </p>
                   )}
                   <button
                     onClick={() => {
@@ -186,7 +198,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
             </Marker>
           ))}
 
-        {/* Drones */}
+        {/* Active Drones */}
         {showDrones &&
           drones.map((drone) => (
             <React.Fragment key={drone.id}>
@@ -196,15 +208,21 @@ export const MapComponent: React.FC<MapComponentProps> = ({
               >
                 <Popup>
                   <div className="p-1 space-y-1">
-                    <p className="font-mono font-bold text-xs text-[#6bd8cb]">{drone.id} ({drone.model})</p>
-                    <p className="text-[11px] text-[#d4e4fa]">Status: <span className="uppercase font-bold">{drone.status}</span></p>
-                    <p className="text-[10px] font-mono text-[#bcc9c6]">Battery: {drone.batteryPercent}% | Altitude: {drone.altitudeMeters}m</p>
+                    <p className="font-mono font-bold text-xs text-[#6bd8cb]">
+                      {drone.id} ({drone.model})
+                    </p>
+                    <p className="text-[11px] text-[#d4e4fa]">
+                      Status: <span className="uppercase font-bold">{drone.status}</span>
+                    </p>
+                    <p className="text-[10px] font-mono text-[#bcc9c6]">
+                      Battery: {drone.batteryPercent}% | Altitude: {drone.altitudeMeters}m
+                    </p>
                   </div>
                 </Popup>
               </Marker>
 
-              {/* Draw Flight Path line to assigned incident */}
-              {drone.assignedIncidentId && (
+              {/* Draw flight path line to assigned incident */}
+              {drone.assignedIncidentId &&
                 (() => {
                   const targetInc = incidents.find((i) => i.id === drone.assignedIncidentId);
                   if (!targetInc) return null;
@@ -217,8 +235,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
                       pathOptions={{ color: '#6bd8cb', weight: 2, dashArray: '5, 5' }}
                     />
                   );
-                })()
-              )}
+                })()}
             </React.Fragment>
           ))}
       </MapContainer>
