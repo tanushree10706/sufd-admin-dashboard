@@ -1,110 +1,84 @@
-SUFD Admin Dashboard
+# SUFD WildGuard: Autonomous UAV Fire Surveillance & Command Dashboard
 
-A modern and responsive Admin Dashboard built using React, TypeScript, and Vite. The application provides a centralized interface for managing operations through an intuitive dashboard with analytics, user management, resource monitoring, and administrative tools.
+An end-to-end intelligent wildfire early-detection and rapid dispatch ecosystem. The platform pairs real-time aerial computer vision (YOLO) on drone feeds with an interactive GIS command dashboard for forest protection squads and ranger divisions.
 
-✨ Features
- Dashboard overview with key metrics
- User and personnel management
- Interactive map integration
- Resource and fleet management
- Analytics and reporting
- History and activity tracking
- Settings and configuration
- Authentication interface
- Responsive and modern UI
- 
-## 🛠️ Tech Stack
+---
 
-| Technology       | Purpose                                                     |
-| ---------------- | ----------------------------------------------------------- |
-| **React**        | Building the user interface with reusable components        |
-| **TypeScript**   | Static typing for improved code quality and maintainability |
-| **Vite**         | Fast development server and optimized production builds     |
-| **CSS3**         | Custom styling and responsive layouts                       |
-| **Context API**  | Global state management across the application              |
-| **HTML5**        | Semantic structure and markup                               |
-| **npm**          | Dependency and package management                           |
-| **Git & GitHub** | Version control and collaboration                           |
+## Key Features
 
-## 📂 Project Structure
+- **AI Aerial Surveillance:** Real-time object detection for early wildfire and smoke detection using fine-tuned YOLO models (`fire_n`, `fire_s`, `fire_m`, `fire_l`).
+- **Telemetry & Off-Grid Edge Design:** Emulates on-device UAV edge processing transmitting compact JSON telemetry alerts (`< 200 bytes`) over long-range 900 MHz LoRa links.
+- **Tadoba Sector Command Map:** Interactive GIS map centered over high-risk wildlife reserves (Tadoba Andhari Tiger Reserve / Western Ghats) with dynamic incident pins, UAV flight paths, and response base perimeters.
+- **Automated Incident Logging:** Real-time synchronization of high-confidence fire detections to Supabase for automated dispatch queue updates.
+- **Fleet & Response Management:** Active tracking of UAV telemetry (altitude, battery, link quality, coordinates) alongside station depots, tankers, and field personnel readiness.
+
+---
+
+## System Architecture
+
+$$\text{Aerial Video Capture} \longrightarrow \underset{\text{(NVIDIA Jetson / YOLO)}}{\text{Edge AI Inference}} \longrightarrow \underset{\text{(900 MHz LoRa Telemetry)}}{\text{JSON Alert Packet}} \longrightarrow \underset{\text{(FastAPI + Supabase)}}{\text{Central API Gateway}} \longrightarrow \underset{\text{(React + Leaflet)}}{\text{Command Dashboard}}$$
+
+---
+
+## Tech Stack
+
+| Domain | Technologies |
+| :--- | :--- |
+| **Frontend Dashboard** | React 18, TypeScript, Tailwind CSS, Lucide Icons, Leaflet / GIS Maps |
+| **Computer Vision Backend** | Python 3.10+, FastAPI, Ultralytics YOLOv8/v11, OpenCV, PyTorch |
+| **Database & Realtime Sync** | Supabase (PostgreSQL, Realtime Subscriptions) |
+| **Edge & UAV Telemetry (Design)** | MAVLink, 900 MHz RFD900x / LoRa, NVIDIA Jetson Linux |
+
+---
+
+## Project Structure
 
 ```text
 sufd-admin-dashboard/
-├── public/                  # Static assets
-│   ├── favicon.svg
-│   └── icons.svg
-│
+├── Eye-in-the-Sky/
+│   └── backend/
+│       ├── app.py                 # FastAPI ML inference & telemetry service
+│       ├── fire-models/           # Fine-tuned wildfire YOLO weights (.pt)
+│       └── general-models/        # General aerial object models
 ├── src/
-│   ├── assets/              # Images and SVGs
-│   ├── components/          # Reusable UI components
-│   │   ├── screens/         # Dashboard screens/pages
-│   │   ├── Header.tsx
-│   │   ├── Navigation.tsx
+│   ├── components/
+│   │   ├── screens/
+│   │   │   ├── DashboardOverviewScreen.tsx
+│   │   │   ├── MLSurveillanceScreen.tsx
+│   │   │   ├── DispatchQueueScreen.tsx
+│   │   │   ├── StationsScreen.tsx
+│   │   │   └── PersonnelScreen.tsx
 │   │   └── MapComponent.tsx
-│   │
-│   ├── context/             # Global state management
-│   ├── types/               # TypeScript type definitions
-│   ├── App.tsx              # Root component
-│   ├── main.tsx             # Application entry point
-│   └── index.css            # Global styles
-│
-├── index.html
-├── package.json
-├── vite.config.ts
-├── tsconfig.json
-└── README.md
-```
+│   ├── context/
+│   │   └── CommandCenterContext.tsx
+│   └── types/
+└── package.json
 
----
+Quick Start Guide
+1. Prerequisites
+Node.js: v18.x or later
 
-##  Getting Started
+Python: 3.10+
 
-Follow these steps to run the project locally.
+PyTorch & Ultralytics: For running local inference
 
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/tanushree10706/sufd-admin-dashboard.git
-```
-
-### 2. Navigate to the project directory
-
-```bash
-cd sufd-admin-dashboard
-```
-
-### 3. Install dependencies
-
-```bash
+2. Frontend Setup
+Bash
+# Install dependencies
 npm install
-```
 
-### 4. Start the development server
-
-```bash
+# Start local development server
 npm run dev
-```
+Dashboard will be available at http://localhost:5173.
 
-Once the server starts, open the URL displayed in your terminal (typically **http://localhost:5173**) in your browser.
+3. Backend ML Service Setup
+Bash
+# Navigate to backend directory
+cd Eye-in-the-Sky/backend
 
----
+# Install Python requirements
+pip install fastapi uvicorn ultralytics opencv-python-headless python-multipart
 
-##  Available Scripts
-
-| Command           | Description                                                                     |
-| ----------------- | ------------------------------------------------------------------------------- |
-| `npm run dev`     | Starts the Vite development server with hot reloading.                          |
-| `npm run build`   | Builds the application for production.                                          |
-| `npm run preview` | Serves the production build locally for preview.                                |
-| `npm run lint`    | Runs the linter to identify code quality and formatting issues (if configured). |
-
----
-
-##  Development Workflow
-
-1. Clone the repository.
-2. Install all project dependencies using `npm install`.
-3. Start the development server with `npm run dev`.
-4. Make your changes in the `src/` directory.
-5. Test your changes in the browser.
-6. Build the project using `npm run build` before deployment.
+# Start the inference server
+python app.py
+FastAPI backend will run at http://localhost:8000.
