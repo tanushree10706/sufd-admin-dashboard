@@ -601,7 +601,7 @@ export const CommandCenterProvider: React.FC<{ children: React.ReactNode }> = ({
         ]);
 
         if (incRes.data && incRes.data.length > 0) {
-          setIncidents((prev) => {
+          setIncidents(() => {
             const existingIds = new Set(initialIncidents.map(i => i.id));
             const newIncidents = incRes.data.filter((row: any) => !existingIds.has(row.id)).map((row: any) => ({
               id: row.id,
@@ -631,7 +631,7 @@ export const CommandCenterProvider: React.FC<{ children: React.ReactNode }> = ({
         }
 
         if (dronesRes.data && dronesRes.data.length > 0) {
-          setDrones((prev) => {
+          setDrones(() => {
             const existingIds = new Set(initialDrones.map(d => d.id));
             const newDrones = dronesRes.data.filter((row: any) => !existingIds.has(row.display_id || row.id)).map((row: any) => ({
               id: row.display_id || row.id,
@@ -652,7 +652,7 @@ export const CommandCenterProvider: React.FC<{ children: React.ReactNode }> = ({
         }
 
         if (stationsRes.data && stationsRes.data.length > 0) {
-          setStations((prev) => {
+          setStations(() => {
             const existingIds = new Set(initialStations.map(s => s.id));
             const newStations = stationsRes.data.filter((row: any) => !existingIds.has(row.id)).map((row: any) => ({
               id: row.id,
@@ -671,7 +671,7 @@ export const CommandCenterProvider: React.FC<{ children: React.ReactNode }> = ({
         }
 
         if (respRes.data && respRes.data.length > 0) {
-          setResponders((prev) => {
+          setResponders(() => {
             const existingIds = new Set(initialResponders.map(r => r.id));
             const newResponders = respRes.data.filter((row: any) => !existingIds.has(row.id)).map((row: any) => ({
               id: row.id,

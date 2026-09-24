@@ -84,19 +84,38 @@ cd aranyak
 
 ### 2. Frontend Dashboard
 ```bash
-cd sufd-admin-dashboard
+# In directory: sufd-admin-dashboard/
 npm install
 npm run dev
 ```
-Open → http://localhost:5173
+Open in browser → http://localhost:5173
 
-### 3. ML Backend
+### 3. ML Backend Server (FastAPI + YOLO + WebSocket)
+The ML Surveillance screen and video/image detection feed require the Python FastAPI backend to be running on port 8000.
+
 ```bash
+# From repository root or sufd-admin-dashboard:
 cd Eye-in-the-Sky/backend
+
+# (Optional but recommended) create/activate virtual environment:
+python -m venv .venv
+# On Windows PowerShell:
+.venv\Scripts\Activate.ps1
+# On Linux/macOS:
+# source .venv/bin/activate
+
+# Install dependencies:
 pip install -r requirements.txt
-uvicorn app:app --reload --port 8000
+
+# Start the ML Backend Server:
+uvicorn app:app --reload --host 0.0.0.0 --port 8000
 ```
-API → http://localhost:8000
+Backend API Docs → http://localhost:8000/docs  
+Health/Status Check → http://localhost:8000/api/models
+
+> 💡 **Troubleshooting Video / Image Inference**:
+> - If you see **"FastAPI Backend is Offline"** or **"WebSocket connection failed"**, verify that the backend server is running on `http://localhost:8000`.
+> - Video inference runs live frame-by-frame YOLO processing streamed over WebSockets (`ws://localhost:8000/ws/predict/video`). Ensure `opencv-python-headless`, `ultralytics`, `fastapi`, and `websockets` are installed from `requirements.txt`.
 
 ### 4. Supabase (Optional)
 Create `sufd-admin-dashboard/.env`:

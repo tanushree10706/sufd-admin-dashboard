@@ -38,18 +38,34 @@ interface VideoFrame {
 
 type InputMode = 'image' | 'video';
 
+// ── Hazard identification helper ──────────────────────────────────────────────
+const isHazardThreat = (cls: string) => [
+  'fire', 'smoke', 'wildfire',
+  'flood', 'water_zone',
+  'collapsed_building', 'structural_hazard'
+].includes(cls.toLowerCase());
+
 // ── Detection count badges ────────────────────────────────────────────────────
 const DetectionTags = ({ counts }: { counts: Record<string, number> }) => (
   <div className="flex flex-wrap gap-2">
-    {Object.entries(counts).map(([cls, count]) => (
-      <span key={cls} className={`px-2.5 py-1 rounded text-xs font-bold shadow-lg flex items-center gap-1 ${
-        ['fire','smoke','wildfire'].includes(cls.toLowerCase())
-          ? 'bg-[#93000a] text-[#ffb4ab] border border-[#ffb4ab]/50'
-          : 'bg-[#1c2b3c] text-[#d4e4fa] border border-[#3d4947]'
-      }`}>{count} {cls.toUpperCase()}</span>
-    ))}
+    {Object.entries(counts).map(([cls, count]) => {
+      const lower = cls.toLowerCase();
+      let colorStyle = 'bg-[#1c2b3c] text-[#d4e4fa] border border-[#3d4947]';
+      if (['fire', 'smoke', 'wildfire'].includes(lower)) {
+        colorStyle = 'bg-[#93000a] text-[#ffb4ab] border border-[#ffb4ab]/50';
+      } else if (['flood', 'water_zone'].includes(lower)) {
+        colorStyle = 'bg-[#003666] text-[#70b2ff] border border-[#70b2ff]/50';
+      } else if (['collapsed_building', 'structural_hazard'].includes(lower)) {
+        colorStyle = 'bg-[#542d00] text-[#ffb68c] border border-[#ffb68c]/50';
+      }
+      return (
+        <span key={cls} className={`px-2.5 py-1 rounded text-xs font-bold shadow-lg flex items-center gap-1 ${colorStyle}`}>
+          {count} {cls.toUpperCase().replace('_', ' ')}
+        </span>
+      );
+    })}
     {Object.keys(counts).length === 0 && (
-      <span className="px-2.5 py-1 rounded text-xs font-bold bg-[#1c2b3c] text-[#bcc9c6] border border-[#3d4947]">NO DETECTIONS</span>
+      <span className="px-2.5 py-1 rounded text-xs font-bold bg-[#1c2b3c] text-[#bcc9c6] border border-[#3d4947]">NO HAZARDS DETECTED</span>
     )}
   </div>
 );
@@ -66,7 +82,7 @@ const TelemetryHUD = ({
   counts: Record<string, number>;
   synced: boolean;
 }) => {
-  const hasThreat = Object.keys(counts).some(k => ['fire','smoke','wildfire'].includes(k.toLowerCase()));
+  const hasThreat = Object.keys(counts).some(isHazardThreat);
 
   return (
     <div className="absolute top-3 left-3 right-3 flex flex-col gap-2 pointer-events-none">
@@ -104,7 +120,7 @@ const TelemetryHUD = ({
               : 'bg-[#051424]/90 border-[#3d4947] text-[#6bd8cb]'
           }`}>
             <CheckCircle2 className="w-3.5 h-3.5" />
-            🚨 Pinned to Live Map via Supabase
+            🚨 Hazard Pinned to Live Map via Supabase
           </div>
         )}
       </div>
@@ -190,9 +206,7 @@ export const MLSurveillanceScreen: React.FC = () => {
       const data: PredictionResult = await res.json();
       setPrediction(data);
 
-      const hasThreat = Object.keys(data.counts).some(k =>
-        ['fire','smoke','wildfire'].includes(k.toLowerCase())
-      );
+      const hasThreat = Object.keys(data.counts).some(isHazardThreat);
       if (hasThreat) {
         setSynced(true);
         setShowToast(true);
@@ -235,7 +249,7 @@ export const MLSurveillanceScreen: React.FC = () => {
       } else if (msg.type === 'frame') {
         setCurrentFrame(msg as VideoFrame);
         setVideoProgress(msg.progress);
-        if (!toastFired && Object.keys(msg.counts).some((k: string) => ['fire','smoke','wildfire'].includes(k.toLowerCase()))) {
+        if (!toastFired && Object.keys(msg.counts).some(isHazardThreat)) {
           toastFired = true;
           setShowToast(true);
           setTimeout(() => setShowToast(false), 4500);
@@ -299,9 +313,8 @@ export const MLSurveillanceScreen: React.FC = () => {
             <div className="flex bg-[#051424] border border-[#3d4947] rounded-lg p-1 gap-1">
               {(['image', 'video'] as InputMode[]).map(mode => (
                 <button key={mode} onClick={() => setInputMode(mode)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
-                    inputMode === mode ? 'bg-[#6bd8cb] text-[#051424]' : 'text-[#bcc9c6] hover:text-[#d4e4fa]'
-                  }`}>
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${inputMode === mode ? 'bg-[#6bd8cb] text-[#051424]' : 'text-[#bcc9c6] hover:text-[#d4e4fa]'
+                    }`}>
                   {mode === 'image' ? <ImageIcon className="w-3.5 h-3.5" /> : <Video className="w-3.5 h-3.5" />}
                   {mode.charAt(0).toUpperCase() + mode.slice(1)}
                 </button>
@@ -310,21 +323,46 @@ export const MLSurveillanceScreen: React.FC = () => {
 
             <div className="flex flex-col gap-1">
               <label className="text-[10px] font-semibold text-[#bcc9c6] uppercase tracking-wider">Model Type</label>
-              <select value={modelType} onChange={e => setModelType(e.target.value)}
+              <select value={modelType} onChange={e => {
+                const nextType = e.target.value;
+                setModelType(nextType);
+                if (nextType === 'Human Detection') {
+                  setModelSize('aranyak-human');
+                } else if (nextType === 'Flood Detection') {
+                  setModelSize('cascade');
+                } else if (nextType === 'Collapsed Building') {
+                  setModelSize('mobilenetv2');
+                } else if (['aranyak-human', 'cascade', 'mobilenetv2'].includes(modelSize)) {
+                  setModelSize('m');
+                }
+              }}
                 className="bg-[#051424] border border-[#3d4947] rounded-md px-3 py-1.5 text-sm text-[#d4e4fa] focus:outline-none focus:border-[#6bd8cb]">
-                <option value="Fire Detection">Fire Detection</option>
-                <option value="General">General Objects</option>
+                <option value="Fire Detection">Fire & Smoke Detection (YOLO)</option>
+                <option value="Human Detection">Human Aerial (SAR VisDrone)</option>
+                <option value="Flood Detection">Flood Detection Cascade (MobileNetV2 + U-Net)</option>
+                <option value="Collapsed Building">Collapsed Building / Damage (MobileNetV2)</option>
+                <option value="General">General Objects (YOLOv8)</option>
               </select>
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-semibold text-[#bcc9c6] uppercase tracking-wider">Model Size</label>
+              <label className="text-[10px] font-semibold text-[#bcc9c6] uppercase tracking-wider">Model Spec / Size</label>
               <select value={modelSize} onChange={e => setModelSize(e.target.value)}
                 className="bg-[#051424] border border-[#3d4947] rounded-md px-3 py-1.5 text-sm text-[#d4e4fa] focus:outline-none focus:border-[#6bd8cb]">
-                <option value="n">Nano (Fastest)</option>
-                <option value="s">Small</option>
-                <option value="m">Medium (Balanced)</option>
-                <option value="l">Large (High Accuracy)</option>
+                {modelType === 'Human Detection' ? (
+                  <option value="aranyak-human">Aranyak Human (YOLO11n VisDrone)</option>
+                ) : modelType === 'Flood Detection' ? (
+                  <option value="cascade">Two-Stage Cascade (MobileNetV2 + U-Net)</option>
+                ) : modelType === 'Collapsed Building' ? (
+                  <option value="mobilenetv2">MobileNetV2 Structural Damage Classifier</option>
+                ) : (
+                  <>
+                    <option value="n">Nano (Fastest)</option>
+                    <option value="s">Small</option>
+                    <option value="m">Medium (Balanced)</option>
+                    <option value="l">Large (High Accuracy)</option>
+                  </>
+                )}
               </select>
             </div>
 
