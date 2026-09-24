@@ -59,7 +59,7 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#051424] bg-grid text-[#d4e4fa] antialiased flex">
+    <div className="min-h-screen bg-[#f8fafc] bg-grid text-[#0f172a] antialiased flex selection:bg-teal-100 selection:text-teal-900">
       {/* Fixed Left Navigation Rail */}
       <Navigation />
 

@@ -5,104 +5,147 @@ import {
   LayoutDashboard,
   Siren,
   Plane,
-  Users,
-  TreePine,
-  History,
   BarChart3,
-  UserCog,
   Settings,
   LogOut,
   ShieldCheck,
   User,
-  ScanEye,
   Camera
 } from 'lucide-react';
 
 export const Navigation: React.FC = () => {
   const { activeScreen, setActiveScreen, currentUser, setCurrentUserRole, logout } = useCommandCenter();
 
+  // Consolidated 6 high-level navigation tabs
   const navItems = [
-    { id: 'overview',     label: 'Overview',          icon: LayoutDashboard },
-    { id: 'dispatch',     label: 'Dispatch Queue',     icon: Siren },
-    { id: 'drones',       label: 'Drone Fleet',        icon: Plane },
-    { id: 'surveillance', label: 'Last Surveillance',  icon: ScanEye },
-    { id: 'ml_surveillance', label: 'AI Aerial Feed', icon: Camera },
-    { id: 'personnel',   label: 'Personnel',          icon: Users },
-    { id: 'stations',    label: 'Response Bases',     icon: TreePine },
-    { id: 'history',     label: 'History',            icon: History },
-    { id: 'analytics',   label: 'Analytics',          icon: BarChart3 },
-    { id: 'users',       label: 'User Access',        icon: UserCog, adminOnly: true },
-    { id: 'settings',    label: 'Settings',           icon: Settings },
+    {
+      id: 'overview',
+      label: 'Overview',
+      icon: LayoutDashboard,
+      matchScreens: ['overview']
+    },
+    {
+      id: 'ml_surveillance',
+      label: 'AI Surveillance',
+      icon: Camera,
+      badge: 'LIVE ML',
+      matchScreens: ['ml_surveillance', 'surveillance']
+    },
+    {
+      id: 'dispatch',
+      label: 'Dispatch & Units',
+      icon: Siren,
+      matchScreens: ['dispatch', 'stations', 'personnel', 'incident_detail']
+    },
+    {
+      id: 'drones',
+      label: 'Drone Fleet',
+      icon: Plane,
+      matchScreens: ['drones']
+    },
+    {
+      id: 'analytics',
+      label: 'Analytics & History',
+      icon: BarChart3,
+      matchScreens: ['analytics', 'history']
+    },
+    {
+      id: 'settings',
+      label: 'Settings & Access',
+      icon: Settings,
+      matchScreens: ['settings', 'users']
+    },
   ];
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-[240px] bg-[#0d1c2d] border-r border-[#3d4947] flex flex-col py-6 z-50 select-none">
+    <aside className="fixed left-0 top-0 h-full w-[240px] bg-white border-r border-slate-200 shadow-xs flex flex-col py-5 z-50 select-none">
       {/* Brand Header */}
-      <div className="px-6 mb-8 cursor-pointer" onClick={() => setActiveScreen('overview')}>
-        <h1 className="font-bold text-[#6bd8cb] text-[20px] leading-[28px] tracking-tight">Aranyak</h1>
-        <p className="text-[10px] text-[#bcc9c6] tracking-[0.2em] uppercase font-bold">Wildfire Detection &amp; Response</p>
+      <div
+        className="px-5 mb-6 cursor-pointer group"
+        onClick={() => setActiveScreen('overview')}
+      >
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 rounded-lg bg-teal-600 flex items-center justify-center text-white font-bold text-base shadow-sm">
+            A
+          </div>
+          <div>
+            <h1 className="font-bold text-slate-900 text-lg leading-tight tracking-tight group-hover:text-teal-700 transition-colors">
+              Aranyak
+            </h1>
+            <p className="text-[10px] text-teal-700 font-semibold tracking-wider uppercase">
+              Emergency Command
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Nav List */}
       <nav className="flex-1 space-y-1 px-3 overflow-y-auto custom-scrollbar">
         {navItems.map((item) => {
-          if (item.adminOnly && currentUser.role !== 'admin') return null;
-
           const Icon = item.icon;
-          const isActive = activeScreen === item.id;
+          const isActive = item.matchScreens.includes(activeScreen);
 
           return (
             <button
               key={item.id}
               onClick={() => setActiveScreen(item.id)}
-              className={`w-full flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ${
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
                 isActive
-                  ? 'text-[#6bd8cb] border-r-2 border-[#6bd8cb] bg-[#1c2b3c]'
-                  : 'text-[#bcc9c6] hover:bg-[#273647] hover:text-[#d4e4fa]'
+                  ? 'bg-teal-50 text-teal-800 font-semibold border-r-4 border-teal-600 shadow-xs'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
               }`}
             >
-              <Icon className="w-5 h-5 mr-3 flex-shrink-0" />
-              <span>{item.label}</span>
+              <div className="flex items-center">
+                <Icon className={`w-4 h-4 mr-3 flex-shrink-0 ${isActive ? 'text-teal-700' : 'text-slate-500'}`} />
+                <span>{item.label}</span>
+              </div>
+              {item.badge && (
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-teal-100 text-teal-800">
+                  {item.badge}
+                </span>
+              )}
             </button>
           );
         })}
       </nav>
 
       {/* User / Role Profile Widget */}
-      <div className="px-4 pt-4 border-t border-[#3d4947] mt-auto">
-        <div className="bg-[#122131] border border-[#3d4947] rounded-lg p-3 space-y-2">
+      <div className="px-3 pt-3 border-t border-slate-200 mt-auto">
+        <div className="bg-slate-50 border border-slate-200 rounded-lg p-2.5 space-y-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2.5 overflow-hidden">
-              <div className="w-8 h-8 rounded-full bg-[#273647] flex items-center justify-center border border-[#3d4947]">
-                <User className="w-4 h-4 text-[#6bd8cb]" />
+            <div className="flex items-center space-x-2 overflow-hidden">
+              <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold border border-teal-200 shrink-0">
+                <User className="w-4 h-4" />
               </div>
               <div className="overflow-hidden">
-                <p className="text-xs font-semibold truncate text-[#d4e4fa]">{currentUser.name}</p>
-                <p className="text-[10px] text-[#bcc9c6] uppercase font-bold">{currentUser.role.replace('_', ' ')}</p>
+                <p className="text-xs font-semibold truncate text-slate-800">{currentUser.name}</p>
+                <p className="text-[10px] text-slate-500 uppercase font-medium">
+                  {currentUser.role.replace('_', ' ')}
+                </p>
               </div>
             </div>
             <button
               onClick={logout}
               title="Log out"
-              className="p-1 hover:bg-[#273647] text-[#bcc9c6] hover:text-[#ffb4ab] rounded transition-colors"
+              className="p-1 hover:bg-slate-200 text-slate-400 hover:text-rose-600 rounded transition-colors"
             >
               <LogOut className="w-4 h-4" />
             </button>
           </div>
 
           {/* Quick Role Switcher for Demo Testing */}
-          <div className="pt-2 border-t border-[#3d4947]/50 flex items-center justify-between text-[10px]">
-            <span className="text-[#bcc9c6] flex items-center gap-1 font-bold">
-              <ShieldCheck className="w-3 h-3 text-[#6bd8cb]" /> ROLE DEMO:
+          <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-[10px]">
+            <span className="text-slate-500 flex items-center gap-1 font-semibold">
+              <ShieldCheck className="w-3 h-3 text-teal-600" /> ROLE:
             </span>
             <select
               value={currentUser.role}
               onChange={(e) => setCurrentUserRole(e.target.value as UserRole)}
-              className="bg-[#051424] text-[#6bd8cb] border border-[#3d4947] rounded text-[10px] px-1 py-0.5 font-mono focus:outline-none"
+              className="bg-white text-slate-700 border border-slate-300 rounded text-[10px] px-1.5 py-0.5 font-medium focus:outline-none focus:border-teal-600"
             >
               <option value="operator">Operator</option>
-              <option value="admin">Admin/Supervisor</option>
-              <option value="station_staff">Station Staff</option>
+              <option value="admin">Supervisor</option>
+              <option value="station_staff">Station Crew</option>
             </select>
           </div>
         </div>
@@ -110,3 +153,4 @@ export const Navigation: React.FC = () => {
     </aside>
   );
 };
+

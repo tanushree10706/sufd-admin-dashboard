@@ -3,26 +3,27 @@
 
 @layer base {
   :root {
-    --sidebar-width: 240px;
+    --sidebar-width: 250px;
     --panel-width: 400px;
-    --background: #051424;
-    --surface: #051424;
-    --surface-low: #0d1c2d;
-    --surface-container: #122131;
-    --surface-high: #1c2b3c;
-    --surface-highest: #273647;
-    --primary: #6bd8cb;
-    --secondary: #ffb3ad;
-    --tertiary: #ffb95f;
-    --error: #ffb4ab;
-    --outline: #879391;
-    --outline-variant: #3d4947;
+    --background: #f8fafc;
+    --surface: #ffffff;
+    --surface-low: #f1f5f9;
+    --surface-container: #ffffff;
+    --surface-high: #f8fafc;
+    --surface-highest: #e2e8f0;
+    --primary: #0d9488;
+    --primary-hover: #0f766e;
+    --secondary: #e11d48;
+    --tertiary: #d97706;
+    --error: #ef4444;
+    --outline: #cbd5e1;
+    --outline-variant: #e2e8f0;
   }
 
   body {
     font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #051424;
-    color: #d4e4fa;
+    background-color: #f8fafc;
+    color: #0f172a;
     overflow-x: hidden;
   }
 
@@ -33,115 +34,102 @@
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0d1c2d;
+  background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #3d4947;
-  border-radius: 2px;
+  background: #cbd5e1;
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #6bd8cb;
+  background: #94a3b8;
 }
 
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #3d4947 #0d1c2d;
+  scrollbar-color: #cbd5e1 #f1f5f9;
 }
 
-/* Animation utilities */
-@keyframes scan {
-  0%   { top: 0;    opacity: 0.8; }
-  50%  { opacity: 0.3; }
-  100% { top: 100%; opacity: 0.8; }
-}
-
-.scanline {
-  width: 100%;
-  height: 2px;
-  background: rgba(107, 216, 203, 0.15);
-  position: absolute;
-  left: 0;
-  animation: scan 6s linear infinite;
-  pointer-events: none;
-  z-index: 10;
-}
-
-/* SLA Breach Animations */
-@keyframes pulse-red-border {
-  0%, 100% { box-shadow: inset 3px 0 0 #ffb4ab; }
-  50%       { box-shadow: inset 3px 0 16px rgba(255, 180, 171, 0.4); }
-}
-
-.sla-red-pulse {
-  box-shadow: inset 3px 0 0 #ffb4ab;
-  background: linear-gradient(90deg, rgba(255, 180, 171, 0.10) 0%, transparent 120px);
-  animation: pulse-red-border 2s infinite ease-in-out;
-}
-
-.sla-amber {
-  box-shadow: inset 3px 0 0 #ffb95f;
-  background: linear-gradient(90deg, rgba(255, 185, 95, 0.08) 0%, transparent 120px);
-}
-
-/* Stat card ambient glow */
-.stat-card-glow {
-  box-shadow: inset 0 0 16px rgba(107, 216, 203, 0.05);
+/* Subtle background grid overlay for clean modern dashboard feel */
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(13, 148, 136, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13, 148, 136, 0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 
 /* Leaflet container */
 .leaflet-container {
   width: 100%;
   height: 100%;
-  background-color: #010f1f !important;
+  background-color: #e5e9ec !important;
   font-family: 'IBM Plex Sans', sans-serif;
 }
 
-/* Dark CartoDB tile polish — keep the dark_all tile naturally dark */
+/* Light Popup polish */
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
-  background: #1c2b3c !important;
-  color: #d4e4fa !important;
-  border: 1px solid #3d4947 !important;
-  border-radius: 6px !important;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.6) !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
 }
 
 .leaflet-popup-content {
-  margin: 10px 14px !important;
-  min-width: 200px;
+  margin: 12px 14px !important;
+  min-width: 220px;
 }
 
 .leaflet-popup-close-button {
-  color: #bcc9c6 !important;
+  color: #64748b !important;
   font-size: 18px !important;
-  top: 6px !important;
+  top: 8px !important;
   right: 8px !important;
 }
 
 .leaflet-control-zoom a {
-  background: #1c2b3c !important;
-  color: #6bd8cb !important;
-  border-color: #3d4947 !important;
+  background: #ffffff !important;
+  color: #0f766e !important;
+  border-color: #e2e8f0 !important;
 }
 .leaflet-control-zoom a:hover {
-  background: #273647 !important;
+  background: #f8fafc !important;
+}
+
+/* Stat card ambient elevation */
+.stat-card-glow {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease-in-out;
+}
+.stat-card-glow:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+/* SLA Status effects */
+@keyframes pulse-red-border {
+  0%, 100% { box-shadow: inset 3px 0 0 #ef4444; }
+  50%       { box-shadow: inset 3px 0 14px rgba(239, 68, 68, 0.2); }
+}
+
+.sla-red-pulse {
+  box-shadow: inset 3px 0 0 #ef4444;
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.06) 0%, transparent 120px);
+  animation: pulse-red-border 2s infinite ease-in-out;
+}
+
+.sla-amber {
+  box-shadow: inset 3px 0 0 #f59e0b;
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.05) 0%, transparent 120px);
 }
 
 /* 24-column grid for analytics bar chart */
 .grid-cols-24 {
   grid-template-columns: repeat(24, minmax(0, 1fr));
-}
-
-/* Subtle background grid overlay for command center feel */
-.bg-grid {
-  background-image:
-    linear-gradient(rgba(107, 216, 203, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(107, 216, 203, 0.04) 1px, transparent 1px);
-  background-size: 32px 32px;
 }
 
 /* Transition for drawer panels */
@@ -153,12 +141,13 @@
   transform: translateX(0);
 }
 
-/* Glassmorphism card for overlays */
+/* Glassmorphism card for light overlays */
 .glass-card {
-  background: rgba(18, 33, 49, 0.85);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(107, 216, 203, 0.15);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 /* Priority badge pulse for critical */
@@ -170,8 +159,9 @@
   animation: badge-critical-pulse 1.5s ease-in-out infinite;
 }
 
-/* Input focus ring in aegis teal */
+/* Input focus ring in teal */
 input:focus, select:focus, textarea:focus {
   outline: none;
-  box-shadow: 0 0 0 1px #6bd8cb;
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.2);
+  border-color: #0d9488;
 }

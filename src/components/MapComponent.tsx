@@ -6,10 +6,34 @@ import { useCommandCenter } from '../context/CommandCenterContext';
 // Fix Leaflet default icon path issues in React
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 
-// Custom HTML Icons using Leaflet divIcon
-
+// Custom HTML Icons using Leaflet divIcon with crisp light theme contrast
 const createIncidentIcon = (priority: string) => {
-  const color = priority === 'critical' ? '#ffb4ab' : priority === 'high' ? '#ffb95f' : '#6bd8cb';
+  const bg = priority === 'critical' ? '#dc2626' : priority === 'high' ? '#ea580c' : '#0d9488';
+  return L.divIcon({
+    className: 'custom-map-icon',
+    html: `
+      <div style="
+        position: relative;
+        width: 30px;
+        height: 30px;
+        background: ${bg};
+        border: 2.5px solid #ffffff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+      ">
+        <span style="font-size: 15px; line-height: 1;">🔥</span>
+      </div>
+    `,
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+  });
+};
+
+const createDroneIcon = (status: string) => {
+  const border = status === 'on_site' ? '#dc2626' : status === 'en_route' ? '#d97706' : '#0d9488';
   return L.divIcon({
     className: 'custom-map-icon',
     html: `
@@ -17,44 +41,19 @@ const createIncidentIcon = (priority: string) => {
         position: relative;
         width: 28px;
         height: 28px;
-        background: ${color};
-        border: 2px solid #051424;
-        border-radius: 50%;
+        background: #ffffff;
+        border: 2px solid ${border};
+        border-radius: 6px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 0 12px ${color};
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
       ">
-        <span style="font-size: 16px; color: #051424;">🔥</span>
+        <span style="font-size: 14px; line-height: 1;">✈️</span>
       </div>
     `,
     iconSize: [28, 28],
     iconAnchor: [14, 14],
-  });
-};
-
-const createDroneIcon = (status: string) => {
-  const color = status === 'on_site' ? '#ffb4ab' : status === 'en_route' ? '#ffb95f' : '#6bd8cb';
-  return L.divIcon({
-    className: 'custom-map-icon',
-    html: `
-      <div style="
-        position: relative;
-        width: 26px;
-        height: 26px;
-        background: #122131;
-        border: 2px solid ${color};
-        border-radius: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 0 8px ${color};
-      ">
-        <span style="font-size: 14px;">✈️</span>
-      </div>
-    `,
-    iconSize: [26, 26],
-    iconAnchor: [13, 13],
   });
 };
 
@@ -64,20 +63,21 @@ const createStationIcon = () => {
     className: 'custom-map-icon',
     html: `
       <div style="
-        width: 26px;
-        height: 26px;
-        background: #1c2b3c;
-        border: 2px solid #6bd8cb;
-        border-radius: 4px;
+        width: 28px;
+        height: 28px;
+        background: #ffffff;
+        border: 2px solid #0284c7;
+        border-radius: 6px;
         display: flex;
         align-items: center;
         justify-content: center;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
       ">
-        <span style="font-size: 14px;">⛺</span>
+        <span style="font-size: 14px; line-height: 1;">⛺</span>
       </div>
     `,
-    iconSize: [26, 26],
-    iconAnchor: [13, 13],
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
   });
 };
 
@@ -109,7 +109,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
   const { incidents, drones, stations, setSelectedIncidentId, setActiveScreen } = useCommandCenter();
 
   return (
-    <div style={{ height, width: '100%' }} className="relative overflow-hidden rounded-xl border border-[#3d4947]">
+    <div style={{ height, width: '100%' }} className="relative overflow-hidden rounded-xl border border-slate-200 shadow-xs">
       <MapContainer
         center={center}
         zoom={zoom}
@@ -118,10 +118,10 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       >
         <MapCenterUpdater center={center} />
 
-        {/* CartoDB Dark Tile Layer */}
+        {/* CartoDB Voyager Tile Layer (Clean light theme) */}
         <TileLayer
           attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
 
         {/* Response Bases & Coverage Radii */}
@@ -134,11 +134,11 @@ export const MapComponent: React.FC<MapComponentProps> = ({
               >
                 <Popup>
                   <div className="p-1 space-y-1">
-                    <p className="font-bold text-xs text-[#6bd8cb]">{st.name}</p>
-                    <p className="text-[11px] text-[#d4e4fa]">{st.address}</p>
-                    <div className="text-[10px] text-[#bcc9c6] font-mono">
+                    <p className="font-bold text-xs text-sky-700">{st.name}</p>
+                    <p className="text-[11px] text-slate-700">{st.address}</p>
+                    <div className="text-[10px] text-slate-500 font-mono">
                       <span>Drones Docked: {st.dockedDrones}/{st.totalDrones}</span> |{' '}
-                      <span>Available Crew: {st.availableResponders}/{st.totalResponders}</span>
+                      <span>Crew: {st.availableResponders}/{st.totalResponders}</span>
                     </div>
                   </div>
                 </Popup>
@@ -146,7 +146,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
               <Circle
                 center={[st.location.latitude, st.location.longitude]}
                 radius={3000}
-                pathOptions={{ color: '#6bd8cb', weight: 1, dashArray: '4, 4', fillOpacity: 0.04 }}
+                pathOptions={{ color: '#0284c7', weight: 1.5, dashArray: '4, 4', fillOpacity: 0.06 }}
               />
             </React.Fragment>
           ))}
@@ -163,24 +163,24 @@ export const MapComponent: React.FC<MapComponentProps> = ({
               <Popup>
                 <div className="p-1 space-y-2 max-w-xs">
                   <div className="flex justify-between items-center">
-                    <span className="font-mono text-xs font-bold text-[#6bd8cb]">{inc.id}</span>
+                    <span className="font-mono text-xs font-bold text-teal-700">{inc.id}</span>
                     <span
                       className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
-                        inc.priority === 'critical' ? 'bg-[#93000a] text-white' : 'bg-[#ca8100] text-white'
+                        inc.priority === 'critical' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
                       }`}
                     >
                       {inc.priority}
                     </span>
                   </div>
-                  <p className="font-bold text-xs text-[#d4e4fa] leading-tight">{inc.title}</p>
-                  <p className="text-[11px] text-[#bcc9c6]">{inc.address}</p>
+                  <p className="font-bold text-xs text-slate-900 leading-tight">{inc.title}</p>
+                  <p className="text-[11px] text-slate-500">{inc.address}</p>
                   {inc.temperatureMax && (
-                    <p className="text-[10px] font-mono text-[#ffb4ab]">
-                      Thermal: {inc.temperatureMax}°C
+                    <p className="text-[10px] font-mono text-rose-600 font-semibold">
+                      Thermal Peak: {inc.temperatureMax}°C
                     </p>
                   )}
                   {inc.containmentPercent !== undefined && (
-                    <p className="text-[10px] font-mono text-[#ffb95f]">
+                    <p className="text-[10px] font-mono text-amber-600 font-semibold">
                       Containment: {inc.containmentPercent.toFixed(0)}%
                     </p>
                   )}
@@ -189,7 +189,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
                       setSelectedIncidentId(inc.id);
                       setActiveScreen('incident_detail');
                     }}
-                    className="w-full bg-[#6bd8cb] text-[#003732] text-[11px] font-bold py-1 rounded hover:brightness-110 transition-all"
+                    className="w-full bg-teal-600 hover:bg-teal-700 text-white text-[11px] font-bold py-1.5 rounded-lg shadow-xs transition-colors"
                   >
                     Open Incident Inspector
                   </button>
@@ -208,13 +208,13 @@ export const MapComponent: React.FC<MapComponentProps> = ({
               >
                 <Popup>
                   <div className="p-1 space-y-1">
-                    <p className="font-mono font-bold text-xs text-[#6bd8cb]">
+                    <p className="font-mono font-bold text-xs text-teal-700">
                       {drone.id} ({drone.model})
                     </p>
-                    <p className="text-[11px] text-[#d4e4fa]">
+                    <p className="text-[11px] text-slate-800">
                       Status: <span className="uppercase font-bold">{drone.status}</span>
                     </p>
-                    <p className="text-[10px] font-mono text-[#bcc9c6]">
+                    <p className="text-[10px] font-mono text-slate-500">
                       Battery: {drone.batteryPercent}% | Altitude: {drone.altitudeMeters}m
                     </p>
                   </div>
@@ -232,7 +232,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
                         [drone.currentLocation.latitude, drone.currentLocation.longitude],
                         [targetInc.location.latitude, targetInc.location.longitude],
                       ]}
-                      pathOptions={{ color: '#6bd8cb', weight: 2, dashArray: '5, 5' }}
+                      pathOptions={{ color: '#0d9488', weight: 2.5, dashArray: '6, 6' }}
                     />
                   );
                 })()}
@@ -242,3 +242,4 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     </div>
   );
 };
+
